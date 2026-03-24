@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vedgi - Корзина</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="database.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: var(--card-bg);
+            border-bottom: 1px solid var(--border-color);
+            padding: 15px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo a {
+            font-family: 'Cinzel', serif;
+            font-size: 28px;
+            color: var(--accent-color);
+            text-decoration: none;
+        }
+
+        .nav-list {
+            display: flex;
+            list-style: none;
+            gap: 30px;
+        }
+
+        .nav-list a {
+            color: var(--text-color);
+            text-decoration: none;
+        }
+
+        .nav-list a.active {
+            color: var(--accent-color);
+        }
+
+        .auth-buttons {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .user-menu {
+            position: relative;
+            cursor: pointer;
+        }
+
+        .user-name {
+            padding: 8px 20px;
+            background: var(--accent-color);
+            color: white;
+            border-radius: 5px;
+            display: inline-block;
+            cursor: pointer;
+        }
+
+        .user-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            width: 220px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin-top: 5px;
+            display: none;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .user-dropdown.show {
+            display: block;
+        }
+
+        .user-dropdown a {
+            display: block;
+            padding: 12px 20px;
+            color: var(--text-color);
+            text-decoration: none;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .user-dropdown a:hover {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        .theme-toggle {
+            background: none;
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 5px 15px;
+            cursor: pointer;
+        }
+
+        .page-title {
+            font-family: 'Cinzel', serif;
+            font-size: 36px;
+            text-align: center;
+            margin: 40px 0;
+            color: var(--accent-color);
+        }
+
+        .cart-items {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .cart-item {
+            display: flex;
+            gap: 20px;
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+            position: relative;
+        }
+
+        .cart-item:last-child {
+            border-bottom: none;
+        }
+
+        .cart-item-image {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 10px;
+        }
+
+        .cart-item-info {
+            flex: 1;
+        }
+
+        .cart-item-info h3 {
+            font-family: 'Cinzel', serif;
+            margin-bottom: 10px;
+        }
+
+        .cart-item-price {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--accent-color);
+            margin: 10px 0;
+        }
+
+        .cart-item-quantity {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .quantity-btn {
+            width: 30px;
+            height: 30px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-color);
+            color: var(--text-color);
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        .quantity-btn:hover {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        .cart-item-total {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--accent-color);
+            min-width: 100px;
+            text-align: right;
+        }
+
+        .remove-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 18px;
+            position: absolute;
+            top: 20px;
+            right: 20px;
+        }
+
+        /* Стили для промокода */
+        .promo-section {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .promo-input {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            background: var(--bg-color);
+            color: var(--text-color);
+            font-size: 16px;
+        }
+
+        .promo-btn {
+            padding: 12px 25px;
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .promo-message {
+            font-size: 14px;
+            margin-top: 10px;
+            padding: 8px;
+            border-radius: 5px;
+            width: 100%;
+        }
+
+        .promo-message.success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .promo-message.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .cart-summary {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 25px;
+            margin-top: 20px;
+        }
+
+        .order-summary {
+            margin-top: 10px;
+        }
+
+        .summary-line {
+            display: flex;
+            justify-content: space-between;
+            margin: 10px 0;
+            font-size: 16px;
+        }
+
+        .summary-total {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--accent-color);
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 2px solid var(--accent-color);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .discount {
+            color: #28a745;
+        }
+
+        .checkout-btn {
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 5px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        .empty-cart {
+            text-align: center;
+            padding: 60px 20px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+        }
+
+        .empty-cart span {
+            font-size: 80px;
+            display: block;
+            margin-bottom: 20px;
+        }
+
+        .empty-cart a {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 12px 30px;
+            background: var(--accent-color);
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            max-width: 500px;
+            width: 90%;
+            background: var(--card-bg);
+            border-radius: 10px;
+            padding: 30px;
+        }
+
+        .modal-header {
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .modal-header h2 {
+            font-family: 'Cinzel', serif;
+            color: var(--accent-color);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+        }
+
+        .payment-methods {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .payment-method {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid var(--border-color);
+            border-radius: 5px;
+            text-align: center;
+            cursor: pointer;
+        }
+
+        .payment-method.selected {
+            border-color: var(--accent-color);
+            background: rgba(184, 134, 11, 0.1);
+        }
+
+        .order-summary-modal {
+            margin: 15px 0;
+            padding: 15px;
+            background: var(--header-bg);
+            border-radius: 5px;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .modal-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .modal-btn.confirm {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        .modal-btn.cancel {
+            background: var(--border-color);
+            color: var(--text-color);
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            border-top: 1px solid var(--border-color);
+            margin-top: auto;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="container header-container">
+            <div class="logo">
+                <a href="index.html">Vedgi</a>
+            </div>
+            <nav class="nav">
+                <ul class="nav-list">
+                    <li><a href="index.html">Главная</a></li>
+                    <li><a href="catalog.html">Каталог</a></li>
+                    <li><a href="cart.html" class="active">Корзина 🛒</a></li>
+                    <li><a href="profile.html">Профиль</a></li>
+                    <li><a href="about.html">О бренде</a></li>
+                    <li><a href="contacts.html">Контакты</a></li>
+                </ul>
+            </nav>
+            <div class="auth-buttons" id="authButtons"></div>
+            <button id="themeToggle" class="theme-toggle">🌙</button>
+        </div>
+    </header>
+
+    <main>
+        <div class="container">
+            <h1 class="page-title">Корзина</h1>
+            <div id="cartContent"></div>
+        </div>
+    </main>
+
+    <div id="checkoutModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Оформление заказа</h2>
+            </div>
+            
+            <div class="payment-methods">
+                <div class="payment-method selected" onclick="selectPayment('card')" id="methodCard">💳 Карта</div>
+                <div class="payment-method" onclick="selectPayment('cash')" id="methodCash">💵 Наличные</div>
+            </div>
+
+            <div class="form-group">
+                <label>Адрес доставки *</label>
+                <input type="text" id="address" placeholder="г. Москва, ул. Тверская, д. 15" required>
+            </div>
+
+            <div id="orderSummaryModal" class="order-summary-modal"></div>
+
+            <div class="modal-buttons">
+                <button class="modal-btn confirm" onclick="confirmOrder()">Подтвердить заказ</button>
+                <button class="modal-btn cancel" onclick="closeModal()">Отмена</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="successModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 style="color: #28a745;">✓ Заказ оформлен</h2>
+            </div>
+            <p id="orderNumber" style="margin: 20px 0; font-size: 18px;"></p>
+            <button class="modal-btn confirm" onclick="window.location.href='profile.html'">Перейти в профиль</button>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <p>&copy; 2026 Vedgi. Все права защищены Traider INC Corporation.</p>
+    </footer>
+
+    <script>
+        let currentUser = null;
+        let selectedPayment = 'card';
+        let appliedPromocode = null;
+        let discountAmount = 0;
+        const WEEKLY_LIMIT = 100;
+
+        function updateHeader() {
+            const authButtons = document.getElementById('authButtons');
+            const currentUserData = localStorage.getItem('current_user');
+            
+            if (currentUserData) {
+                const user = JSON.parse(currentUserData);
+                currentUser = user;
+                authButtons.innerHTML = `
+                    <div class="user-menu">
+                        <span class="user-name" onclick="toggleMenu(event)">${user.name} ▼</span>
+                        <div class="user-dropdown" id="userDropdown">
+                            <a href="profile.html">👤 Личный кабинет</a>
+                            ${user.role === 'admin' ? '<a href="admin.html">⚙️ Админ-панель</a>' : ''}
+                            <a href="#" onclick="logout(); return false;">🚪 Выйти</a>
+                        </div>
+                    </div>
+                `;
+            } else {
+                window.location.href = 'login.html';
+            }
+        }
+
+        function toggleMenu(event) {
+            event.stopPropagation();
+            const dropdown = document.getElementById('userDropdown');
+            dropdown.classList.toggle('show');
+        }
+
+        document.addEventListener('click', () => {
+            const dropdown = document.getElementById('userDropdown');
+            if (dropdown) dropdown.classList.remove('show');
+        });
+
+        function logout() {
+            localStorage.removeItem('current_user');
+            window.location.href = 'index.html';
+        }
+
+        // ============= ФУНКЦИИ ДЛЯ НЕДЕЛЬНОГО ЛИМИТА =============
+        function getWeeklyPurchasedCount(userId, productId) {
+            if (!userId) return 0;
+            const weeklyKey = `weekly_purchases_${userId}`;
+            const purchases = JSON.parse(localStorage.getItem(weeklyKey)) || [];
+            const oneWeekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+            
+            return purchases
+                .filter(p => p.productId === productId && p.timestamp > oneWeekAgo)
+                .reduce((sum, p) => sum + p.quantity, 0);
+        }
+
+        function recordWeeklyPurchase(userId, productId, quantity) {
+            if (!userId) return;
+            const weeklyKey = `weekly_purchases_${userId}`;
+            const purchases = JSON.parse(localStorage.getItem(weeklyKey)) || [];
+            
+            purchases.push({
+                productId: productId,
+                quantity: quantity,
+                timestamp: Date.now()
+            });
+            
+            localStorage.setItem(weeklyKey, JSON.stringify(purchases));
+        }
+
+        // ============= ФУНКЦИЯ ПРИМЕНЕНИЯ ПРОМОКОДА =============
+        function applyPromocode() {
+            const promoInput = document.getElementById('promoCode');
+            const code = promoInput.value.trim().toUpperCase();
+            const messageDiv = document.getElementById('promoMessage');
+            
+            if (!code) {
+                messageDiv.className = 'promo-message error';
+                messageDiv.textContent = 'Введите код промокода';
+                return;
+            }
+
+            const promocodes = JSON.parse(localStorage.getItem('vedgi_promocodes')) || [];
+            const promo = promocodes.find(p => p.code === code);
+            
+            if (!promo) {
+                messageDiv.className = 'promo-message error';
+                messageDiv.textContent = '❌ Неверный промокод';
+                return;
+            }
+
+            // Проверка срока действия
+            const now = new Date();
+            const start = promo.startDate ? new Date(promo.startDate) : null;
+            const end = promo.endDate ? new Date(promo.endDate) : null;
+            
+            if (start && start > now) {
+                messageDiv.className = 'promo-message error';
+                messageDiv.textContent = '❌ Промокод еще не активен';
+                return;
+            }
+            
+            if (end && end < now) {
+                messageDiv.className = 'promo-message error';
+                messageDiv.textContent = '❌ Срок действия промокода истек';
+                return;
+            }
+            
+            // Проверка лимита использований
+            if (promo.uses >= promo.maxUses) {
+                messageDiv.className = 'promo-message error';
+                messageDiv.textContent = '❌ Промокод больше не действителен';
+                return;
+            }
+
+            // Получаем текущую сумму корзины
+            const cart = JSON.parse(localStorage.getItem(`cart_${currentUser.id}`)) || [];
+            const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            
+            // Проверка минимальной суммы
+            if (subtotal < promo.minSum) {
+                messageDiv.className = 'promo-message error';
+                messageDiv.textContent = `❌ Минимальная сумма заказа для этого промокода: ${promo.minSum.toLocaleString()} ₽`;
+                return;
+            }
+
+            // Применяем скидку
+            appliedPromocode = promo;
+            
+            if (promo.type === 'percent') {
+                discountAmount = subtotal * (promo.discount / 100);
+            } else {
+                discountAmount = promo.discount;
+            }
+            
+            // Не даем скидку больше суммы заказа
+            if (discountAmount > subtotal) {
+                discountAmount = subtotal;
+            }
+            
+            messageDiv.className = 'promo-message success';
+            messageDiv.textContent = `✅ Промокод применен! Скидка: ${promo.type === 'percent' ? promo.discount + '%' : promo.discount + ' ₽'}`;
+            
+            // Обновляем отображение корзины
+            loadCart();
+        }
+
+        function removePromocode() {
+            appliedPromocode = null;
+            discountAmount = 0;
+            document.getElementById('promoCode').value = '';
+            document.getElementById('promoMessage').className = '';
+            document.getElementById('promoMessage').textContent = '';
+            loadCart();
+        }
+
+        function loadCart() {
+            const cartContent = document.getElementById('cartContent');
+            
+            if (!currentUser) return;
+
+            const cart = JSON.parse(localStorage.getItem(`cart_${currentUser.id}`)) || [];
+            
+            if (cart.length === 0) {
+                cartContent.innerHTML = `
+                    <div class="empty-cart">
+                        <span>🛒</span>
+                        <h2>Корзина пуста</h2>
+                        <p>Перейдите в каталог, чтобы выбрать ароматы</p>
+                        <a href="catalog.html">В каталог</a>
+                    </div>
+                `;
+                return;
+            }
+
+            const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            const finalTotal = subtotal - discountAmount;
+
+            cartContent.innerHTML = `
+                <div class="cart-items">
+                    ${cart.map((item, index) => `
+                        <div class="cart-item">
+                            <img src="${item.image}" alt="${item.name}" class="cart-item-image" onerror="this.src='https://via.placeholder.com/100'">
+                            <div class="cart-item-info">
+                                <h3>${item.name}</h3>
+                                <div class="cart-item-price">${item.price.toLocaleString()} ₽</div>
+                                <div class="cart-item-quantity">
+                                    <button class="quantity-btn" onclick="updateQuantity(${index}, ${item.quantity - 1})">-</button>
+                                    <span>${item.quantity}</span>
+                                    <button class="quantity-btn" onclick="updateQuantity(${index}, ${item.quantity + 1})">+</button>
+                                </div>
+                            </div>
+                            <div class="cart-item-total">
+                                ${(item.price * item.quantity).toLocaleString()} ₽
+                            </div>
+                            <button class="remove-btn" onclick="removeItem(${index})">×</button>
+                        </div>
+                    `).join('')}
+                </div>
+                
+                <div class="promo-section">
+                    <input type="text" id="promoCode" class="promo-input" placeholder="Введите промокод">
+                    <button class="promo-btn" onclick="applyPromocode()">Применить</button>
+                    ${appliedPromocode ? `<button class="promo-btn" style="background: #6c757d;" onclick="removePromocode()">Отменить</button>` : ''}
+                    <div id="promoMessage" class="promo-message"></div>
+                </div>
+                
+                <div class="cart-summary">
+                    <div class="order-summary">
+                        <div class="summary-line">
+                            <span>Товары (${cart.reduce((sum, i) => sum + i.quantity, 0)} шт.):</span>
+                            <span>${subtotal.toLocaleString()} ₽</span>
+                        </div>
+                        ${discountAmount > 0 ? `
+                            <div class="summary-line discount">
+                                <span>Скидка:</span>
+                                <span>- ${discountAmount.toLocaleString()} ₽</span>
+                            </div>
+                        ` : ''}
+                        <div class="summary-total">
+                            <span>Итого к оплате:</span>
+                            <span>${finalTotal.toLocaleString()} ₽</span>
+                        </div>
+                    </div>
+                    <button class="checkout-btn" onclick="openModal()">Оформить заказ</button>
+                </div>
+            `;
+        }
+
+        function updateQuantity(index, newQuantity) {
+            if (!currentUser) return;
+            
+            const cart = JSON.parse(localStorage.getItem(`cart_${currentUser.id}`)) || [];
+            const item = cart[index];
+            if (!item) return;
+            
+            const products = JSON.parse(localStorage.getItem('vedgi_products')) || [];
+            const product = products.find(p => p.id === item.productId);
+            
+            if (!product) {
+                alert('Ошибка: товар не найден');
+                return;
+            }
+            
+            if (newQuantity <= 0) {
+                if (confirm('Убрать товар из корзины?')) {
+                    cart.splice(index, 1);
+                    // При изменении корзины сбрасываем промокод
+                    appliedPromocode = null;
+                    discountAmount = 0;
+                } else {
+                    return;
+                }
+            } else {
+                if (newQuantity > product.quantity) {
+                    alert(`❌ Нельзя заказать больше ${product.quantity} шт. (доступно на складе)`);
+                    return;
+                }
+                
+                let weeklyPurchased = getWeeklyPurchasedCount(currentUser.id, item.productId);
+                if (weeklyPurchased + newQuantity > WEEKLY_LIMIT) {
+                    alert(`❌ Вы не можете купить больше ${WEEKLY_LIMIT} единиц этого товара в неделю. Уже куплено: ${weeklyPurchased}. Вы пытаетесь заказать ${newQuantity}.`);
+                    return;
+                }
+                
+                item.quantity = newQuantity;
+                // При изменении корзины сбрасываем промокод
+                appliedPromocode = null;
+                discountAmount = 0;
+            }
+            
+            localStorage.setItem(`cart_${currentUser.id}`, JSON.stringify(cart));
+            loadCart();
+        }
+
+        function removeItem(index) {
+            if (!currentUser) return;
+            if (!confirm('Убрать товар из корзины?')) return;
+            
+            const cart = JSON.parse(localStorage.getItem(`cart_${currentUser.id}`)) || [];
+            cart.splice(index, 1);
+            localStorage.setItem(`cart_${currentUser.id}`, JSON.stringify(cart));
+            // При удалении товара сбрасываем промокод
+            appliedPromocode = null;
+            discountAmount = 0;
+            loadCart();
+        }
+
+        function selectPayment(method) {
+            selectedPayment = method;
+            document.getElementById('methodCard').classList.remove('selected');
+            document.getElementById('methodCash').classList.remove('selected');
+            document.getElementById(`method${method.charAt(0).toUpperCase() + method.slice(1)}`).classList.add('selected');
+        }
+
+        function openModal() {
+            const cart = JSON.parse(localStorage.getItem(`cart_${currentUser.id}`)) || [];
+            const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            const finalTotal = subtotal - discountAmount;
+            
+            document.getElementById('orderSummaryModal').innerHTML = `
+                <div style="margin-bottom: 10px;"><strong>Сумма заказа:</strong> ${subtotal.toLocaleString()} ₽</div>
+                ${discountAmount > 0 ? `<div style="margin-bottom: 10px; color: #28a745;"><strong>Скидка:</strong> - ${discountAmount.toLocaleString()} ₽</div>` : ''}
+                <div style="font-size: 20px; font-weight: 700; color: var(--accent-color);"><strong>Итого:</strong> ${finalTotal.toLocaleString()} ₽</div>
+                ${appliedPromocode ? `<div style="margin-top: 10px; font-size: 12px;">Промокод: ${appliedPromocode.code}</div>` : ''}
+            `;
+            document.getElementById('checkoutModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('checkoutModal').classList.remove('active');
+        }
+
+        function confirmOrder() {
+            const address = document.getElementById('address').value;
+            
+            if (!address) {
+                alert('Введите адрес доставки');
+                return;
+            }
+
+            const cart = JSON.parse(localStorage.getItem(`cart_${currentUser.id}`)) || [];
+            
+            if (cart.length === 0) {
+                alert('Корзина пуста');
+                closeModal();
+                return;
+            }
+
+            // Проверка недельного лимита перед оформлением
+            for (const item of cart) {
+                let weeklyPurchased = getWeeklyPurchasedCount(currentUser.id, item.productId);
+                if (weeklyPurchased + item.quantity > WEEKLY_LIMIT) {
+                    alert(`❌ Невозможно оформить заказ. Товар "${item.name}" превышает недельный лимит в ${WEEKLY_LIMIT} шт. Уже куплено: ${weeklyPurchased}, в корзине: ${item.quantity}.`);
+                    return;
+                }
+            }
+
+            let orders = JSON.parse(localStorage.getItem('vedgi_orders')) || [];
+            
+            const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            const finalTotal = subtotal - discountAmount;
+            
+            const newOrder = {
+                id: 'ORD-' + Date.now().toString().slice(-8),
+                userId: currentUser.id,
+                customerName: currentUser.name,
+                date: new Date().toLocaleString(),
+                items: cart.map(item => ({
+                    productId: item.productId,
+                    name: item.name,
+                    price: item.price,
+                    quantity: item.quantity,
+                    category: item.category,
+                    type: item.type
+                })),
+                subtotal: subtotal,
+                discount: discountAmount,
+                total: finalTotal,
+                status: 'new',
+                paymentMethod: selectedPayment,
+                address: address,
+                promocode: appliedPromocode ? appliedPromocode.code : null
+            };
+            
+            orders.push(newOrder);
+            localStorage.setItem('vedgi_orders', JSON.stringify(orders));
+            
+            // Обновляем использование промокода
+            if (appliedPromocode) {
+                const promocodes = JSON.parse(localStorage.getItem('vedgi_promocodes')) || [];
+                const promoIndex = promocodes.findIndex(p => p.code === appliedPromocode.code);
+                if (promoIndex !== -1) {
+                    promocodes[promoIndex].uses = (promocodes[promoIndex].uses || 0) + 1;
+                    localStorage.setItem('vedgi_promocodes', JSON.stringify(promocodes));
+                }
+            }
+            
+            let products = JSON.parse(localStorage.getItem('vedgi_products')) || [];
+            
+            for (const item of cart) {
+                const productIndex = products.findIndex(p => p.id === item.productId);
+                if (productIndex !== -1) {
+                    products[productIndex].quantity -= item.quantity;
+                    products[productIndex].sold = (products[productIndex].sold || 0) + item.quantity;
+                    products[productIndex].inStock = products[productIndex].quantity > 0;
+                    
+                    // Записываем покупку для недельного лимита
+                    recordWeeklyPurchase(currentUser.id, item.productId, item.quantity);
+                }
+            }
+            
+            localStorage.setItem('vedgi_products', JSON.stringify(products));
+            localStorage.removeItem(`cart_${currentUser.id}`);
+            
+            // Сбрасываем промокод
+            appliedPromocode = null;
+            discountAmount = 0;
+            
+            closeModal();
+            document.getElementById('orderNumber').textContent = `Номер заказа: ${newOrder.id}`;
+            document.getElementById('successModal').classList.add('active');
+            
+            loadCart();
+        }
+
+        const themeToggle = document.getElementById('themeToggle');
+        themeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('dark-theme');
+            themeToggle.textContent = document.body.classList.contains('dark-theme') ? '☀️' : '🌙';
+            localStorage.setItem('vedgi_theme', document.body.classList.contains('dark-theme') ? 'dark' : 'light');
+        });
+
+        const savedTheme = localStorage.getItem('vedgi_theme');
+        if (savedTheme === 'dark') {
+            document.body.classList.add('dark-theme');
+            themeToggle.textContent = '☀️';
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            updateHeader();
+            loadCart();
+        });
+    </script>
+</body>
+</html>

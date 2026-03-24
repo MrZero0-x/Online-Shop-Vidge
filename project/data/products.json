@@ -1,0 +1,160 @@
+{
+    "products": [
+      {
+        "id": "prod-001",
+        "name": "Черный Император",
+        "category": "male",
+        "price": 18500,
+        "image": "images/black-emperor.jpg",
+        "description": "Древесно-пряный аромат с нотами черного перца, кедра и кожи. Для уверенных в себе лидеров.",
+        "type": "Древесный",
+        "volume": "50 мл",
+        "rating": 4.9,
+        "reviews": 156,
+        "inStock": true
+      },
+      {
+        "id": "prod-002",
+        "name": "Стальной характер",
+        "category": "male",
+        "price": 21000,
+        "image": "images/steel.jpg",
+        "description": "Холодный, но уверенный аромат с бергамотом, ветивером и амброй. Для бизнесменов и политиков.",
+        "type": "Цитрусовый",
+        "volume": "50 мл",
+        "rating": 4.7,
+        "reviews": 98,
+        "inStock": true
+      },
+      {
+        "id": "prod-003",
+        "name": "Королевская ночь",
+        "category": "female",
+        "price": 22000,
+        "image": "images/royal-night.jpg",
+        "description": "Восточно-цветочный аромат с розой, жасмином и удам. Для женщин у власти.",
+        "type": "Цветочный",
+        "volume": "50 мл",
+        "rating": 4.8,
+        "reviews": 203,
+        "inStock": true
+      },
+      {
+        "id": "prod-004",
+        "name": "Алмазная королева",
+        "category": "female",
+        "price": 24500,
+        "image": "images/diamond-queen.jpg",
+        "description": "Изысканный аромат с ирисом, ванилью и белым мускусом. Для первых леди.",
+        "type": "Пудровый",
+        "volume": "50 мл",
+        "rating": 4.9,
+        "reviews": 167,
+        "inStock": true
+      },
+      {
+        "id": "prod-005",
+        "name": "Белый ворон",
+        "category": "unisex",
+        "price": 26000,
+        "image": "images/white-raven.jpg",
+        "description": "Альдегидный аромат с ирисом, мускусом и дубовым мхом. Для избранных, не как все.",
+        "type": "Альдегидный",
+        "volume": "50 мл",
+        "rating": 4.6,
+        "reviews": 78,
+        "inStock": true
+      },
+      {
+        "id": "prod-006",
+        "name": "Теневой совет",
+        "category": "male",
+        "price": 25000,
+        "image": "images/shadow-council.jpg",
+        "description": "Мистический аромат с ладаном, табаком и удом. Интригующий и загадочный.",
+        "type": "Дымный",
+        "volume": "50 мл",
+        "rating": 5.0,
+        "reviews": 45,
+        "inStock": true
+      },
+      {
+        "id": "prod-007",
+        "name": "Черная орхидея",
+        "category": "female",
+        "price": 23500,
+        "image": "images/black-orchid.jpg",
+        "description": "Пряно-цветочный аромат с черной орхидеей, пачули и ванилью. Для роковых женщин.",
+        "type": "Пряный",
+        "volume": "50 мл",
+        "rating": 4.8,
+        "reviews": 134,
+        "inStock": true
+      },
+      {
+        "id": "prod-008",
+        "name": "Сапфир",
+        "category": "unisex",
+        "price": 23500,
+        "image": "images/sapphire.jpg",
+        "description": "Свежий цитрусовый аромат с бергамотом, морской солью и амброй. Для творческих личностей.",
+        "type": "Цитрусовый",
+        "volume": "50 мл",
+        "rating": 4.5,
+        "reviews": 92,
+        "inStock": true
+      },
+      {
+        "id": "prod-009",
+        "name": "Ночной волк",
+        "category": "male",
+        "price": 16500,
+        "image": "images/night-wolf.jpg",
+        "description": "Свежий, но агрессивный аромат с грейпфрутом, мятой и черным мускусом. Для охотников за успехом.",
+        "type": "Свежий",
+        "volume": "50 мл",
+        "rating": 4.4,
+        "reviews": 67,
+        "inStock": true
+      },
+      {
+        "id": "prod-010",
+        "name": "Золотой лев",
+        "category": "male",
+        "price": 28000,
+        "image": "images/golden-lion.jpg",
+        "description": "Королевский аромат с шафраном, розой и сандалом. Роскошный и благородный.",
+        "type": "Пряный",
+        "volume": "50 мл",
+        "rating": 4.9,
+        "reviews": 112,
+        "inStock": true
+      }
+    ],
+    "categories": [
+      {
+        "id": "male",
+        "name": "Мужские",
+        "count": 4
+      },
+      {
+        "id": "female",
+        "name": "Женские",
+        "count": 3
+      },
+      {
+        "id": "unisex",
+        "name": "Унисекс",
+        "count": 3
+      }
+    ],
+    "settings": {
+      "siteName": "Vedgi",
+      "siteSlogan": "Духи для могущественных и влиятельных",
+      "phone": "+7 (495) 123-45-67",
+      "email": "info@vedgi.ru",
+      "address": "г. Москва, ул. Тверская, 15",
+      "currency": "₽",
+      "deliveryPrice": 500
+    }
+  }

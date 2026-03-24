@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <div class="auth-buttons"></div>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vedgi - Товар</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header class="header">
+        <div class="container header-container">
+            <div class="logo">
+                <a href="index.html">Vedgi</a>
+            </div>
+            <nav class="nav">
+                <ul class="nav-list">
+                    <li><a href="index.html">Главная</a></li>
+                    <li><a href="catalog.html">Каталог</a></li>
+                    <li><a href="about.html">О бренде</a></li>
+                    <li><a href="contacts.html">Контакты</a></li>
+                </ul>
+            </nav>
+            <button id="theme-toggle" class="theme-toggle">🌙</button>
+        </div>
+    </header>
+
+    <main>
+        <div class="container" id="productContainer">
+            <!-- Данные загружаются через JS -->
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2026 Vedgi. Все права защищены Traider INC Corporation.</p>
+        </div>
+    </footer>
+
+    <script>
+        function loadProductDetails() {
+            const productId = localStorage.getItem('current_product_id');
+            const products = JSON.parse(localStorage.getItem('vedgi_products')) || [];
+            const product = products.find(p => p.id === productId);
+            const container = document.getElementById('productContainer');
+
+            if (!product) {
+                container.innerHTML = '<p style="text-align: center; padding: 50px;">Товар не найден</p>';
+                return;
+            }
+
+            container.innerHTML = `
+                <div class="product-container">
+                    <div class="product-gallery">
+                        <img src="${product.image}" alt="${product.name}" class="product-main-img" id="mainImage">
+                    </div>
+
+                    <div class="product-info">
+                        <h1 class="product-name">${product.name}</h1>
+                        <p class="product-category">${getCategoryName(product.category)}</p>
+                        <p class="product-price-lg">${product.price.toLocaleString()} ₽</p>
+                        
+                        <div class="product-section">
+                            <h3>Пирамида аромата</h3>
+                            <ul class="notes-list">
+                                ${product.notes ? product.notes.split('\n').map(note => `<li>${note}</li>`).join('') : '<li>Описание отсутствует</li>'}
+                            </ul>
+                        </div>
+
+                        <div class="product-section">
+                            <h3>Характеристики</h3>
+                            <table class="specs-table">
+                                <tr><td>Объем</td><td>${product.volume || '50 мл'}</td></tr>
+                                <tr><td>Категория</td><td>${getCategoryName(product.category)}</td></tr>
+                                <tr><td>Тип аромата</td><td>${product.type || 'Элитный'}</td></tr>
+                                <tr><td>Описание</td><td>${product.description || 'Нет описания'}</td></tr>
+                            </table>
+                        </div>
+
+                        <button class="btn btn-primary btn-large" onclick="addToCart('${product.id}')">Заказать</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function getCategoryName(category) {
+            const categories = {
+                'male': 'Мужские',
+                'female': 'Женские',
+                'unisex': 'Унисекс'
+            };
+            return categories[category] || category;
+        }
+
+        function addToCart(productId) {
+            alert('Товар добавлен в корзину! (функция демо)');
+        }
+
+        document.addEventListener('DOMContentLoaded', loadProductDetails);
+
+        // Переключение темы
+        const themeToggle = document.getElementById('theme-toggle');
+        if (themeToggle) {
+            themeToggle.addEventListener('click', () => {
+                document.body.classList.toggle('dark-theme');
+                themeToggle.textContent = document.body.classList.contains('dark-theme') ? '☀️' : '🌙';
+            });
+        }
+    </script>
+<script src="database.js"></script>
+<script src="auth.js"></script>
+<script>
+    // В конце каждой страницы
+    document.addEventListener('DOMContentLoaded', () => {
+        updateAuthUI();
+    });
+</script>
+</body>
+</html>

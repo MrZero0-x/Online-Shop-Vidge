@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <title>Vedgi</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vedgi - Главная</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="database.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        :root {
+            --bg-color: #ffffff;
+            --text-color: #333;
+            --accent-color: #b8860b;
+            --card-bg: #ffffff;
+            --border-color: #ddd;
+        }
+
+        body.dark-theme {
+            --bg-color: #1a1a1a;
+            --text-color: #f0f0f0;
+            --card-bg: #2d2d2d;
+            --border-color: #444;
+        }
+
+        .header {
+            background: var(--card-bg);
+            border-bottom: 1px solid var(--border-color);
+            padding: 15px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo a {
+            font-family: 'Cinzel', serif;
+            font-size: 28px;
+            color: var(--accent-color);
+            text-decoration: none;
+        }
+
+        .nav-list {
+            display: flex;
+            list-style: none;
+            gap: 30px;
+        }
+
+        .nav-list a {
+            color: var(--text-color);
+            text-decoration: none;
+        }
+
+        .nav-list a.active {
+            color: var(--accent-color);
+        }
+
+        .auth-buttons {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .btn-login {
+            padding: 8px 20px;
+            background: transparent;
+            border: 2px solid var(--accent-color);
+            color: var(--accent-color);
+            text-decoration: none;
+            border-radius: 5px;
+        }
+
+        .btn-register {
+            padding: 8px 20px;
+            background: var(--accent-color);
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+
+        .user-menu {
+            position: relative;
+            cursor: pointer;
+        }
+
+        .user-name {
+            padding: 8px 20px;
+            background: var(--accent-color);
+            color: white;
+            border-radius: 5px;
+            display: inline-block;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .user-name:hover {
+            opacity: 0.9;
+        }
+
+        .user-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            width: 220px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin-top: 5px;
+            display: none;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            z-index: 1000;
+        }
+
+        .user-dropdown.show {
+            display: block;
+        }
+
+        .user-dropdown a {
+            display: block;
+            padding: 12px 20px;
+            color: var(--text-color);
+            text-decoration: none;
+            border-bottom: 1px solid var(--border-color);
+            transition: background 0.3s;
+        }
+
+        .user-dropdown a:last-child {
+            border-bottom: none;
+        }
+
+        .user-dropdown a:hover {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        .theme-toggle {
+            background: none;
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 5px 15px;
+            cursor: pointer;
+        }
+
+        .hero {
+            padding: 80px 0;
+            background: linear-gradient(135deg, var(--bg-color) 0%, var(--card-bg) 100%);
+        }
+
+        .hero-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 50px;
+            align-items: center;
+        }
+
+        .hero-content {
+            padding-right: 40px;
+        }
+
+        .hero-title {
+            font-family: 'Cinzel', serif;
+            font-size: 56px;
+            color: var(--accent-color);
+            margin-bottom: 20px;
+        }
+
+        .hero-subtitle {
+            font-size: 20px;
+            color: var(--accent-color);
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .hero-description {
+            font-size: 18px;
+            line-height: 1.8;
+            margin-bottom: 30px;
+            opacity: 0.9;
+        }
+
+        .hero-image {
+            width: 100%;
+            height: 400px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 120px;
+            color: var(--accent-color);
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 14px 35px;
+            background: var(--accent-color);
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: 600;
+            transition: opacity 0.3s;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+        }
+
+        .advantages {
+            padding: 80px 0;
+            background: var(--card-bg);
+        }
+
+        .section-title {
+            font-family: 'Cinzel', serif;
+            font-size: 42px;
+            text-align: center;
+            margin-bottom: 50px;
+            color: var(--accent-color);
+        }
+
+        .advantages-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            list-style: none;
+        }
+
+        .advantage-item {
+            text-align: center;
+            padding: 30px;
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            transition: transform 0.3s;
+        }
+
+        .advantage-item:hover {
+            transform: translateY(-5px);
+        }
+
+        .advantage-icon {
+            font-size: 48px;
+            color: var(--accent-color);
+            margin-bottom: 20px;
+            display: block;
+        }
+
+        .advantage-item h3 {
+            margin-bottom: 15px;
+            font-family: 'Cinzel', serif;
+        }
+
+        .hits-section {
+            padding: 80px 0;
+        }
+
+        .hits-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+            margin-top: 40px;
+        }
+
+        .hit-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            overflow: hidden;
+            transition: transform 0.3s;
+        }
+
+        .hit-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .hit-image {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+        }
+
+        .hit-info {
+            padding: 20px;
+        }
+
+        .hit-title {
+            font-family: 'Cinzel', serif;
+            font-size: 20px;
+            margin-bottom: 10px;
+        }
+
+        .hit-price {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--accent-color);
+            margin: 15px 0;
+        }
+
+        .btn-hit {
+            display: inline-block;
+            width: 100%;
+            padding: 12px;
+            background: var(--accent-color);
+            color: white;
+            text-decoration: none;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            border-top: 1px solid var(--border-color);
+            margin-top: auto;
+        }
+
+        @media (max-width: 992px) {
+            .hero-title {
+                font-size: 42px;
+            }
+            .hero-container {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+            .hits-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .hits-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="container header-container">
+            <div class="logo">
+                <a href="index.html">Vedgi</a>
+            </div>
+            <nav class="nav">
+                <ul class="nav-list">
+                    <li><a href="index.html" class="active">Главная</a></li>
+                    <li><a href="catalog.html">Каталог</a></li>
+                    <li><a href="cart.html">Корзина 🛒</a></li>
+                    <li><a href="profile.html">Профиль</a></li>
+                    <li><a href="about.html">О бренде</a></li>
+                    <li><a href="contacts.html">Контакты</a></li>
+                </ul>
+            </nav>
+            <div class="auth-buttons" id="authButtons"></div>
+            <button id="themeToggle" class="theme-toggle">🌙</button>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="container hero-container">
+                <div class="hero-content">
+                    <h1 class="hero-title">Vedgi</h1>
+                    <p class="hero-subtitle">Духи для могущественных и влиятельных</p>
+                    <p class="hero-description">
+                        Добро пожаловать в мир Vedgi — эксклюзивной парфюмерии для тех, кто привык быть в центре внимания. 
+                        Наши ароматы создаются лучшими парфюмерами мира из редчайших ингредиентов, 
+                        чтобы подчеркнуть ваш статус и индивидуальность. Каждый флакон — это произведение искусства, 
+                        достойное истинных ценителей роскоши.
+                    </p>
+                    <a href="catalog.html" class="btn">Исследовать коллекцию</a>
+                </div>
+                <img src="https://avatars.mds.yandex.net/i?id=dd4393bf566148d053dd28136c2fdef35237151d4f437148-5260221-images-thumbs&n=13" alt="Vedgi аромат" style="width: 100%; height: 400px; object-fit: cover; border-radius: 10px;">
+            </div>
+        </section>
+
+        <section class="advantages">
+            <div class="container">
+                <h2 class="section-title">Почему выбирают Vedgi</h2>
+                <ul class="advantages-list">
+                    <li class="advantage-item">
+                        <span class="advantage-icon">✦</span>
+                        <h3>100% Натуральные</h3>
+                        <p>Только лучшие эссенции из Грасса и Флоренции. Мы используем исключительно натуральные компоненты высшего качества.</p>
+                    </li>
+                    <li class="advantage-item">
+                        <span class="advantage-icon">✦</span>
+                        <h3>Эксклюзивность</h3>
+                        <p>Лимитированные коллекции, ручная работа и уникальные рецептуры, которые не повторяются. Каждый аромат существует в ограниченном количестве.</p>
+                    </li>
+                    <li class="advantage-item">
+                        <span class="advantage-icon">✦</span>
+                        <h3>Стойкость 24 часа</h3>
+                        <p>Высокая концентрация парфюмерных масел обеспечивает непревзойденную стойкость. Аромат остается с вами в течение всего дня.</p>
+                    </li>
+                    <li class="advantage-item">
+                        <span class="advantage-icon">✦</span>
+                        <h3>Хрустальные флаконы</h3>
+                        <p>Каждый флакон создается вручную итальянскими мастерами из натурального хрусталя. Это не просто емкость, а произведение искусства.</p>
+                    </li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="hits-section">
+            <div class="container">
+                <h2 class="section-title">Хиты продаж</h2>
+                <div class="hits-grid" id="hitsGrid"></div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <p>&copy; 2026 Vedgi. Все права защищены Traider INC Corporation. Духи для могущественных и влиятельных.</p>
+    </footer>
+
+    <script>
+        function updateHeader() {
+            const authButtons = document.getElementById('authButtons');
+            const currentUser = localStorage.getItem('current_user');
+            
+            if (currentUser) {
+                const user = JSON.parse(currentUser);
+                authButtons.innerHTML = `
+                    <div class="user-menu">
+                        <span class="user-name" onclick="toggleMenu(event)">${user.name} ▼</span>
+                        <div class="user-dropdown" id="userDropdown">
+                            <a href="profile.html">👤 Личный кабинет</a>
+                            ${user.role === 'admin' ? '<a href="admin.html">⚙️ Админ-панель</a>' : ''}
+                            <a href="#" onclick="logout(); return false;">🚪 Выйти</a>
+                        </div>
+                    </div>
+                `;
+            } else {
+                authButtons.innerHTML = `
+                    <a href="login.html" class="btn-login">Войти</a>
+                    <a href="login.html?register=true" class="btn-register">Регистрация</a>
+                `;
+            }
+        }
+
+        function toggleMenu(event) {
+            event.stopPropagation();
+            const dropdown = document.getElementById('userDropdown');
+            if (dropdown) {
+                dropdown.classList.toggle('show');
+            }
+        }
+
+        document.addEventListener('click', function() {
+            const dropdown = document.getElementById('userDropdown');
+            if (dropdown) {
+                dropdown.classList.remove('show');
+            }
+        });
+
+        function logout() {
+            localStorage.removeItem('current_user');
+            updateHeader();
+            window.location.href = 'index.html';
+        }
+
+        // ============= ИСПРАВЛЕННАЯ ФУНКЦИЯ ЗАГРУЗКИ ХИТОВ =============
+        function loadHits() {
+            console.log('🔥 Загрузка хитов продаж...');
+            
+            // Получаем товары
+            const products = JSON.parse(localStorage.getItem('vedgi_products')) || [];
+            
+            console.log('Все товары:', products.map(p => ({ name: p.name, sold: p.sold })));
+            
+            // Добавляем поле sold если его нет
+            products.forEach(p => {
+                if (p.sold === undefined) p.sold = 0;
+            });
+            
+            // Сортируем по количеству продаж (сначала самые продаваемые)
+            const hits = [...products].sort((a, b) => (b.sold || 0) - (a.sold || 0)).slice(0, 3);
+            
+            console.log('🔥 Отобранные хиты:', hits.map(p => ({ name: p.name, sold: p.sold })));
+            
+            const hitsGrid = document.getElementById('hitsGrid');
+            
+            if (!hitsGrid) {
+                console.error('❌ Элемент hitsGrid не найден!');
+                return;
+            }
+            
+            // Проверяем, есть ли товары с продажами
+            const hasSales = hits.some(h => h.sold > 0);
+            
+            if (hits.length === 0) {
+                hitsGrid.innerHTML = '<p style="text-align: center; grid-column: 1/-1;">Товары скоро появятся</p>';
+                return;
+            }
+            
+            if (!hasSales) {
+                hitsGrid.innerHTML = '<p style="text-align: center; grid-column: 1/-1;">Пока нет продаж. Совершите первую покупку!</p>';
+                return;
+            }
+
+            hitsGrid.innerHTML = hits.map(p => {
+                // Определяем категорию для отображения
+                let categoryText = '';
+                if (p.category === 'male') categoryText = '👔 Мужской';
+                else if (p.category === 'female') categoryText = '👗 Женский';
+                else if (p.category === 'unisex') categoryText = '👥 Унисекс';
+                
+                return `
+                    <div class="hit-card">
+                        <img src="${p.image}" alt="${p.name}" class="hit-image" onerror="this.src='https://via.placeholder.com/300x250?text=${p.name}'">
+                        <div class="hit-info">
+                            <div class="hit-category">${categoryText} • ${p.type || 'Элитный аромат'}</div>
+                            <h3 class="hit-title">${p.name}</h3>
+                            <div class="hit-price">${p.price.toLocaleString()} ₽</div>
+                            <div style="font-size: 14px; margin: 10px 0; color: #28a745;">
+                                🏆 Продано: ${p.sold || 0} шт.
+                            </div>
+                            <a href="catalog.html" class="btn-hit">В каталог</a>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // ============= ТЕМА =============
+        const themeToggle = document.getElementById('themeToggle');
+        themeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('dark-theme');
+            themeToggle.textContent = document.body.classList.contains('dark-theme') ? '☀️' : '🌙';
+            localStorage.setItem('vedgi_theme', document.body.classList.contains('dark-theme') ? 'dark' : 'light');
+        });
+
+        const savedTheme = localStorage.getItem('vedgi_theme');
+        if (savedTheme === 'dark') {
+            document.body.classList.add('dark-theme');
+            themeToggle.textContent = '☀️';
+        }
+
+        // ============= ЗАГРУЗКА =============
+        document.addEventListener('DOMContentLoaded', () => {
+            updateHeader();
+            loadHits(); // ← ИСПРАВЛЕНО: было loadProducts(), стало loadHits()
+        });
+    </script>
+</body>
+</html>

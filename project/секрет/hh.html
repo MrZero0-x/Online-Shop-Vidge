@@ -1,0 +1,998 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Geometry Dash — 10 режимов + 4 биома</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+        }
+        body {
+            background: #0a0f0d;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Big Shoulders Display', 'Arial Black', sans-serif;
+        }
+        .game-container {
+            background: #1a2a22;
+            padding: 20px;
+            border-radius: 50px;
+            box-shadow: 0 25px 0 #0a1813, 0 30px 30px black;
+            border: 5px solid #5a9b83;
+        }
+        canvas {
+            display: block;
+            width: 1200px;
+            height: 600px;
+            border-radius: 30px;
+            background: #0f201b;
+            box-shadow: inset 0 -8px 0 #1f3f33, 0 0 0 8px #6bb297;
+            cursor: pointer;
+        }
+        .ui-panel {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+            padding: 10px 35px;
+            background: #2a4036;
+            border-radius: 70px;
+            border: 4px solid #7cccb0;
+            box-shadow: inset 0 -6px 0 #1e4a38, 0 12px 0 #0f2f22;
+        }
+        .mode-display {
+            background: #1f3f33;
+            padding: 10px 45px;
+            border-radius: 60px;
+            border: 4px solid #9effe0;
+            color: #d5ffed;
+            text-shadow: 4px 4px 0 #2a7a62;
+            font-size: 42px;
+            font-weight: 900;
+            min-width: 280px;
+            text-align: center;
+        }
+        .score-display {
+            background: #2a4f3f;
+            padding: 10px 55px;
+            border-radius: 60px;
+            border: 4px solid #ffb86b;
+            color: #ffd98c;
+            text-shadow: 5px 5px 0 #a55f2a;
+            font-size: 64px;
+            font-family: 'Courier New', monospace;
+            font-weight: 900;
+            box-shadow: inset 0 -5px 0 #8f5f2f;
+        }
+        .biome-selector {
+            display: flex;
+            gap: 15px;
+            margin: 15px 0 10px 0;
+            justify-content: center;
+        }
+        .biome-btn {
+            background: #2f4d40;
+            border: 4px solid #7bb59a;
+            color: #dcffed;
+            font-size: 32px;
+            font-weight: 900;
+            padding: 12px 25px;
+            border-radius: 60px;
+            cursor: pointer;
+            box-shadow: 0 8px 0 #1a3329, 0 8px 15px black;
+            transition: 0.07s;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            flex: 1;
+        }
+        .biome-btn.active {
+            background: #5f9f80;
+            border-color: #c8ffe6;
+            transform: translateY(4px);
+            box-shadow: 0 4px 0 #1a3329, 0 8px 15px black;
+        }
+        .biome-btn:active {
+            transform: translateY(6px);
+            box-shadow: 0 2px 0 #1a3329, 0 8px 15px black;
+        }
+        .reset-btn {
+            background: #ff8a8a;
+            border: none;
+            color: white;
+            font-weight: 900;
+            font-size: 48px;
+            padding: 10px 50px;
+            border-radius: 80px;
+            cursor: pointer;
+            box-shadow: 0 12px 0 #a04545, 0 12px 25px black;
+            border: 5px solid #ffd6d6;
+            text-shadow: 4px 4px 0 #8f3f3f;
+            margin-left: 15px;
+        }
+        .reset-btn:active {
+            transform: translateY(8px);
+            box-shadow: 0 6px 0 #a04545, 0 12px 25px black;
+        }
+    </style>
+</head>
+<body>
+<div class="game-container">
+    <canvas id="gameCanvas" width="1200" height="600"></canvas>
+    <div class="biome-selector">
+        <button class="biome-btn active" id="biome1">🌲 ЛЕС</button>
+        <button class="biome-btn" id="biome2">🏜️ ПУСТЫНЯ</button>
+        <button class="biome-btn" id="biome3">❄️ ЛЁД</button>
+        <button class="biome-btn" id="biome4">🌋 АД</button>
+    </div>
+    <div class="ui-panel">
+        <div class="mode-display" id="modeDisplay">КУБ</div>
+        <div class="score-display" id="scoreDisplay">000000</div>
+        <button class="reset-btn" id="resetBtn">►</button>
+    </div>
+</div>
+
+<script>
+(function() {
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const modeSpan = document.getElementById('modeDisplay');
+    const scoreSpan = document.getElementById('scoreDisplay');
+    
+    // Кнопки биомов
+    const biome1Btn = document.getElementById('biome1');
+    const biome2Btn = document.getElementById('biome2');
+    const biome3Btn = document.getElementById('biome3');
+    const biome4Btn = document.getElementById('biome4');
+    const resetBtn = document.getElementById('resetBtn');
+
+    // ========== КОНСТАНТЫ ==========
+    const W = 1200, H = 600;
+    const GROUND_Y = 480;
+    const CEILING_Y = 80;
+    
+    // ФИЗИКА
+    const GRAVITY = 0.6;
+    const BASE_SPEED = 5.2;
+    
+    // ========== 10 УНИКАЛЬНЫХ РЕЖИМОВ ==========
+    const MODES = [
+        { 
+            name: 'КУБ', 
+            color: '#47e6d0', 
+            desc: 'Классический куб. Прыгай по блокам',
+            update: (p, spaceDown, spacePressed) => {
+                p.vy += GRAVITY;
+                if (p.vy > 12) p.vy = 12;
+                p.y += p.vy;
+                const onGround = (p.y >= GROUND_Y - 16);
+                if (spacePressed && onGround) {
+                    p.vy = -10.5;
+                    p.y -= 2;
+                }
+            }
+        },
+        { 
+            name: 'КОРАБЛЬ', 
+            color: '#ffb85c', 
+            desc: 'Плавное парение с ускорением',
+            update: (p, spaceDown) => {
+                let target = spaceDown ? -5.2 : 5.2;
+                if (p.vy < target) p.vy = Math.min(p.vy + 0.2, target);
+                else if (p.vy > target) p.vy = Math.max(p.vy - 0.2, target);
+                p.y += p.vy;
+            }
+        },
+        { 
+            name: 'ВОЛНА', 
+            color: '#b45ae0', 
+            desc: 'Статичная скорость 6.5',
+            update: (p, spaceDown) => {
+                p.vy = spaceDown ? -6.5 : 6.5;
+                p.y += p.vy;
+            }
+        },
+        { 
+            name: 'ТАРЕЛКА', 
+            color: '#c0a0e0', 
+            desc: 'Бесконечные прыжки',
+            update: (p, spaceDown, spacePressed) => {
+                p.vy += 0.55;
+                if (p.vy > 10) p.vy = 10;
+                p.y += p.vy;
+                if (spacePressed) {
+                    p.vy = -9.2;
+                    p.y -= 2;
+                }
+            }
+        },
+        { 
+            name: 'ШАР', 
+            color: '#ff9966', 
+            desc: 'Меняет гравитацию на поверхности',
+            update: (p, spaceDown, spacePressed) => {
+                p.vy += 0.65 * p.ballDir;
+                if (Math.abs(p.vy) > 11) p.vy = 11 * Math.sign(p.vy);
+                p.y += p.vy;
+                const onGround = (p.y >= GROUND_Y - 16);
+                const onCeiling = (p.y <= CEILING_Y + 16);
+                if (spacePressed && (onGround || onCeiling)) {
+                    p.ballDir *= -1;
+                    p.vy = 0;
+                }
+            },
+            init: (p) => { p.ballDir = 1; }
+        },
+        { 
+            name: 'РОБОТ', 
+            color: '#77dd77', 
+            desc: 'Сила прыжка от зажатия',
+            update: (p, spaceDown, spacePressed, spaceReleased) => {
+                p.vy += 0.6;
+                if (p.vy > 12) p.vy = 12;
+                p.y += p.vy;
+                const onGround = (p.y >= GROUND_Y - 16);
+                
+                if (onGround) {
+                    p.robotJumps = 2;
+                    p.robotCharge = 0;
+                    p.robotCharging = false;
+                }
+                
+                if (spacePressed && (onGround || p.robotJumps > 0)) {
+                    p.robotCharging = true;
+                    p.robotCharge = 0;
+                }
+                
+                if (p.robotCharging && spaceDown) {
+                    p.robotCharge = Math.min(p.robotCharge + 1, 20);
+                }
+                
+                if (spaceReleased && p.robotCharging) {
+                    let force = -8.0 - (p.robotCharge / 20) * 6.0;
+                    p.vy = force;
+                    p.y -= 2;
+                    if (!onGround) p.robotJumps--;
+                    p.robotCharging = false;
+                }
+            },
+            init: (p) => { p.robotJumps = 2; p.robotCharge = 0; p.robotCharging = false; }
+        },
+        { 
+            name: 'ЗМЕЙ', 
+            color: '#ff66aa', 
+            desc: 'Телепорт через каждые 3 секунды',
+            update: (p, spaceDown, spacePressed, spaceReleased, frame) => {
+                p.vy += 0.6;
+                if (p.vy > 10) p.vy = 10;
+                p.y += p.vy;
+                const onGround = (p.y >= GROUND_Y - 16);
+                
+                if (!p.snakeTimer) p.snakeTimer = 0;
+                p.snakeTimer++;
+                
+                if (p.snakeTimer > 180) {
+                    p.snakeTimer = 0;
+                    p.y = Math.random() * (GROUND_Y - 32 - CEILING_Y - 32) + CEILING_Y + 16;
+                    p.vy = 0;
+                }
+                
+                if (spacePressed && onGround) {
+                    p.vy = -9.5;
+                    p.y -= 2;
+                }
+            },
+            init: (p) => { p.snakeTimer = 0; }
+        },
+        { 
+            name: 'ПРИЗРАК', 
+            color: '#aaaaaa', 
+            desc: 'Может проходить сквозь стены раз в 2 сек',
+            update: (p, spaceDown, spacePressed) => {
+                p.vy += 0.6;
+                if (p.vy > 10) p.vy = 10;
+                p.y += p.vy;
+                
+                if (!p.ghostTimer) p.ghostTimer = 0;
+                p.ghostTimer++;
+                
+                p.ghostMode = (p.ghostTimer > 120 && p.ghostTimer < 160);
+                
+                const onGround = (p.y >= GROUND_Y - 16);
+                if (spacePressed && onGround) {
+                    p.vy = -9.5;
+                    p.y -= 2;
+                }
+            },
+            init: (p) => { p.ghostTimer = 0; p.ghostMode = false; }
+        },
+        { 
+            name: 'МАГНИТ', 
+            color: '#66aaff', 
+            desc: 'Притягивается к блокам',
+            update: (p, spaceDown, spacePressed) => {
+                p.vy += 0.6;
+                if (p.vy > 9) p.vy = 9;
+                p.y += p.vy;
+                
+                // Поиск ближайшего блока
+                let nearestY = GROUND_Y - 16;
+                let minDist = Math.abs(p.y - nearestY);
+                
+                for (let obs of obstacles) {
+                    if (obs.x + obs.w > p.x && obs.x < p.x + 32) {
+                        let blockY = obs.y - 16;
+                        let dist = Math.abs(p.y - blockY);
+                        if (dist < minDist) {
+                            minDist = dist;
+                            nearestY = blockY;
+                        }
+                    }
+                }
+                
+                // Магнитное притяжение
+                if (minDist < 100 && !spaceDown) {
+                    if (p.y < nearestY) p.vy += 0.3;
+                    else p.vy -= 0.3;
+                }
+                
+                const onGround = (p.y >= GROUND_Y - 16);
+                if (spacePressed && onGround) {
+                    p.vy = -9.5;
+                    p.y -= 2;
+                }
+            }
+        },
+        { 
+            name: 'ХАОС', 
+            color: '#ff5555', 
+            desc: 'Случайные прыжки',
+            update: (p, spaceDown, spacePressed) => {
+                p.vy += 0.6;
+                if (p.vy > 14) p.vy = 14;
+                p.y += p.vy;
+                
+                if (!p.chaosTimer) p.chaosTimer = 0;
+                p.chaosTimer++;
+                
+                if (p.chaosTimer > 30 && Math.random() < 0.02) {
+                    p.vy = -12 + Math.random() * 6;
+                    p.chaosTimer = 0;
+                }
+                
+                const onGround = (p.y >= GROUND_Y - 16);
+                if (spacePressed && onGround) {
+                    p.vy = -10.5;
+                    p.y -= 2;
+                }
+            },
+            init: (p) => { p.chaosTimer = 0; }
+        }
+    ];
+    
+    // ========== БИОМЫ ==========
+    const BIOMES = [
+        { // ЛЕС
+            ground: '#2f7357',
+            groundLight: '#4fe6c0',
+            groundDark: '#1e604b',
+            ceiling: '#2b8875',
+            ceilingLight: '#53cfb2',
+            bg1: '#0e4a33',
+            bg2: '#063a2b',
+            obstacle: '#c44f4f',
+            portal: '#7fffd4'
+        },
+        { // ПУСТЫНЯ
+            ground: '#b88a4f',
+            groundLight: '#e6c07f',
+            groundDark: '#8f6530',
+            ceiling: '#b89f6b',
+            ceilingLight: '#e6cf9f',
+            bg1: '#8a6e3a',
+            bg2: '#6a4e2a',
+            obstacle: '#c47f4f',
+            portal: '#ffb554'
+        },
+        { // ЛЁД
+            ground: '#6ba5b8',
+            groundLight: '#a5e6ff',
+            groundDark: '#3f7f8f',
+            ceiling: '#6bb8b8',
+            ceilingLight: '#a5ffff',
+            bg1: '#2a6a7a',
+            bg2: '#1a4a5a',
+            obstacle: '#7fafcf',
+            portal: '#aaffff'
+        },
+        { // АД
+            ground: '#b84f4f',
+            groundLight: '#ff7f7f',
+            groundDark: '#8f2f2f',
+            ceiling: '#b86b4f',
+            ceilingLight: '#ff9f7f',
+            bg1: '#5a2a2a',
+            bg2: '#3a1a1a',
+            obstacle: '#cf7f7f',
+            portal: '#ffaaaa'
+        }
+    ];
+    
+    let currentBiome = 0;
+    
+    // Состояние игры
+    let gameStarted = false;
+    let gameOver = false;
+    let gameCompleted = false;
+    let score = 0;
+    let frame = 0;
+    let currentLevel = 0; // 0-9 для разных уровней
+    
+    // Игрок
+    let player = {
+        x: 250,
+        y: GROUND_Y - 16,
+        vy: 0,
+        modeIndex: 0,
+        // Динамические свойства для режимов
+        ballDir: 1,
+        robotJumps: 2,
+        robotCharge: 0,
+        robotCharging: false,
+        snakeTimer: 0,
+        ghostTimer: 0,
+        ghostMode: false,
+        chaosTimer: 0
+    };
+    
+    let obstacles = [];
+    let portals = [];
+    
+    // Управление
+    let spaceDown = false;
+    let lastSpace = false;
+    let spacePressed = false;
+    let spaceReleased = false;
+    
+    // ========== ГЕНЕРАЦИЯ ЭПИЧНЫХ УРОВНЕЙ ==========
+    function generateLevel(biome, levelNum) {
+        obstacles = [];
+        portals = [];
+        
+        // Базовые параметры
+        let length = 30000 + levelNum * 5000;
+        let complexity = 1 + levelNum * 0.3;
+        let portalInterval = 600 - levelNum * 30;
+        if (biome === 3) portalInterval = 800; // Ад - редкие порталы
+        
+        // Генерируем порталы
+        for (let i = 1; i <= 30; i++) {
+            portals.push({
+                x: 800 + i * portalInterval + Math.random() * 200,
+                active: true,
+                modeIndex: i % MODES.length
+            });
+        }
+        
+        // Генерируем препятствия
+        let x = 600;
+        while (x < length) {
+            let type = Math.floor(Math.random() * 6);
+            let gap = 150 + Math.random() * 100 * complexity;
+            
+            if (type === 0) { // Наземный блок
+                obstacles.push({
+                    x: x, y: GROUND_Y - 32, w: 32, h: 32,
+                    passed: false, type: 'ground'
+                });
+            }
+            else if (type === 1) { // Потолочный блок
+                obstacles.push({
+                    x: x, y: CEILING_Y, w: 32, h: 32,
+                    passed: false, type: 'ceiling'
+                });
+            }
+            else if (type === 2) { // Воздушный блок
+                obstacles.push({
+                    x: x, y: CEILING_Y + 100 + Math.random() * 200, w: 28, h: 28,
+                    passed: false, type: 'air'
+                });
+            }
+            else if (type === 3) { // Группа блоков
+                for (let j = 0; j < 3; j++) {
+                    obstacles.push({
+                        x: x + j * 50, y: GROUND_Y - 32, w: 32, h: 32,
+                        passed: false, type: 'ground'
+                    });
+                }
+                x += 100;
+            }
+            else if (type === 4) { // Вертикальная стена
+                for (let j = 0; j < 5; j++) {
+                    obstacles.push({
+                        x: x, y: GROUND_Y - 32 - j * 40, w: 32, h: 32,
+                        passed: false, type: 'ground'
+                    });
+                }
+            }
+            else { // Сложная комбинация
+                obstacles.push({
+                    x: x, y: GROUND_Y - 32, w: 32, h: 32,
+                    passed: false, type: 'ground'
+                });
+                obstacles.push({
+                    x: x + 80, y: CEILING_Y, w: 32, h: 32,
+                    passed: false, type: 'ceiling'
+                });
+                obstacles.push({
+                    x: x + 160, y: CEILING_Y + 150, w: 28, h: 28,
+                    passed: false, type: 'air'
+                });
+                x += 200;
+            }
+            
+            x += gap + 50;
+        }
+        
+        // Финальный блок
+        obstacles.push({
+            x: length, y: GROUND_Y - 32, w: 32, h: 32,
+            passed: false, type: 'finish'
+        });
+    }
+    
+    // ========== СБРОС ==========
+    function resetGame() {
+        gameStarted = true;
+        gameOver = false;
+        gameCompleted = false;
+        score = 0;
+        
+        // Сброс игрока
+        player = {
+            x: 250,
+            y: GROUND_Y - 16,
+            vy: 0,
+            modeIndex: 0,
+            ballDir: 1,
+            robotJumps: 2,
+            robotCharge: 0,
+            robotCharging: false,
+            snakeTimer: 0,
+            ghostTimer: 0,
+            ghostMode: false,
+            chaosTimer: 0
+        };
+        
+        generateLevel(currentBiome, currentLevel);
+        frame = 0;
+        spaceDown = false;
+        lastSpace = false;
+        
+        modeSpan.innerText = MODES[player.modeIndex].name;
+    }
+    
+    // ========== СМЕНА БИОМА ==========
+    function setBiome(biome) {
+        currentBiome = biome;
+        
+        biome1Btn.classList.remove('active');
+        biome2Btn.classList.remove('active');
+        biome3Btn.classList.remove('active');
+        biome4Btn.classList.remove('active');
+        
+        if (biome === 0) biome1Btn.classList.add('active');
+        else if (biome === 1) biome2Btn.classList.add('active');
+        else if (biome === 2) biome3Btn.classList.add('active');
+        else biome4Btn.classList.add('active');
+        
+        // Случайный уровень при смене биома
+        currentLevel = Math.floor(Math.random() * 10);
+        resetGame();
+    }
+    
+    // ========== КОЛЛИЗИИ ==========
+    function checkCollisions() {
+        if (!gameStarted || gameOver || gameCompleted) return;
+        
+        // Границы
+        if (player.y + 16 > GROUND_Y) {
+            player.y = GROUND_Y - 16;
+            player.vy = 0;
+        }
+        if (player.y - 16 < CEILING_Y) {
+            player.y = CEILING_Y + 16;
+            player.vy = 0;
+        }
+        
+        // Проверка препятствий
+        for (let i = 0; i < obstacles.length; i++) {
+            const obs = obstacles[i];
+            
+            if (obs.x + obs.w < -100) continue;
+            
+            if (!obs.passed && player.x > obs.x + obs.w) {
+                obs.passed = true;
+                score += 10;
+                
+                if (obs.type === 'finish') {
+                    gameCompleted = true;
+                    gameStarted = false;
+                }
+            }
+            
+            if (!obs.passed) {
+                const pL = player.x - 15;
+                const pR = player.x + 15;
+                const pT = player.y - 15;
+                const pB = player.y + 15;
+                
+                // Призрак может проходить сквозь стены
+                if (player.ghostMode && player.modeIndex === 7) continue;
+                
+                if (pR > obs.x && pL < obs.x + obs.w && pB > obs.y && pT < obs.y + obs.h) {
+                    gameOver = true;
+                    gameStarted = false;
+                    break;
+                }
+            }
+        }
+        
+        // Проверка порталов
+        for (let i = 0; i < portals.length; i++) {
+            const portal = portals[i];
+            if (portal.active && player.x > portal.x && player.x < portal.x + 40) {
+                portal.active = false;
+                player.modeIndex = portal.modeIndex;
+                
+                // Инициализация режима
+                if (MODES[player.modeIndex].init) {
+                    MODES[player.modeIndex].init(player);
+                }
+                
+                modeSpan.innerText = MODES[player.modeIndex].name;
+                break;
+            }
+        }
+    }
+    
+    // ========== ОБНОВЛЕНИЕ ==========
+    function update() {
+        if (!gameStarted || gameOver || gameCompleted) return;
+        
+        frame++;
+        
+        spacePressed = (spaceDown && !lastSpace);
+        spaceReleased = (!spaceDown && lastSpace);
+        
+        // Обновление текущего режима
+        if (MODES[player.modeIndex]) {
+            MODES[player.modeIndex].update(
+                player, spaceDown, spacePressed, spaceReleased, frame
+            );
+        }
+        
+        // Движение уровня
+        let speed = BASE_SPEED + Math.floor(score / 2000);
+        for (let obs of obstacles) {
+            obs.x -= speed;
+        }
+        for (let portal of portals) {
+            portal.x -= speed;
+        }
+        
+        lastSpace = spaceDown;
+        
+        checkCollisions();
+    }
+    
+    // ========== ОТРИСОВКА ==========
+    function draw() {
+        ctx.clearRect(0, 0, W, H);
+        
+        let biome = BIOMES[currentBiome];
+        
+        // Фон
+        const grad = ctx.createLinearGradient(0, 0, 0, H);
+        grad.addColorStop(0, biome.bg1);
+        grad.addColorStop(0.8, biome.bg2);
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, W, H);
+        
+        // Пол
+        ctx.fillStyle = biome.ground;
+        ctx.fillRect(0, GROUND_Y, W, 12);
+        ctx.fillStyle = biome.groundLight;
+        ctx.fillRect(0, GROUND_Y+8, W, 20);
+        ctx.fillStyle = biome.groundDark;
+        ctx.fillRect(0, GROUND_Y+28, W, H - GROUND_Y - 28);
+        
+        // Потолок
+        ctx.fillStyle = biome.ceiling;
+        ctx.fillRect(0, CEILING_Y-16, W, 10);
+        ctx.fillStyle = biome.ceilingLight;
+        ctx.fillRect(0, CEILING_Y-26, W, 10);
+        
+        // Декорации биома
+        ctx.fillStyle = biome.groundLight;
+        ctx.globalAlpha = 0.2;
+        for (let i = 0; i < 20; i++) {
+            ctx.beginPath();
+            ctx.arc(100 + i * 200, 200 + Math.sin(i + frame * 0.02) * 50, 30, 0, 2*Math.PI);
+            ctx.fill();
+        }
+        ctx.globalAlpha = 1;
+        
+        // Портал
+        for (let portal of portals) {
+            if (portal.x < -50 || portal.x > W + 50) continue;
+            
+            let modeColor = MODES[portal.modeIndex].color;
+            
+            ctx.shadowColor = modeColor;
+            ctx.shadowBlur = 30;
+            ctx.fillStyle = modeColor;
+            ctx.beginPath();
+            ctx.ellipse(portal.x + 20, 280, 25, 40, 0, 0, 2*Math.PI);
+            ctx.fill();
+            
+            ctx.shadowBlur = 0;
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 28px Arial';
+            ctx.fillText('⚡', portal.x + 8, 290);
+        }
+        
+        // Препятствия
+        for (let obs of obstacles) {
+            if (obs.x + obs.w < 0 || obs.x > W + 200) continue;
+            
+            let mainColor = biome.obstacle;
+            if (obs.type.includes('wave')) mainColor = '#9f6fcf';
+            if (obs.type === 'finish') mainColor = '#ffd966';
+            
+            ctx.shadowColor = '#3a0000';
+            ctx.shadowBlur = 15;
+            ctx.fillStyle = mainColor;
+            ctx.fillRect(obs.x, obs.y, obs.w, obs.h);
+            
+            ctx.shadowBlur = 0;
+            ctx.strokeStyle = '#ffb2b2';
+            ctx.lineWidth = 4;
+            ctx.strokeRect(obs.x+2, obs.y+2, obs.w-4, obs.h-4);
+            
+            if (obs.type !== 'finish') {
+                ctx.fillStyle = 'white';
+                ctx.beginPath();
+                ctx.arc(obs.x + obs.w*0.3, obs.y + obs.h*0.4, 6, 0, 2*Math.PI);
+                ctx.fill();
+                ctx.fillStyle = '#202020';
+                ctx.beginPath();
+                ctx.arc(obs.x + obs.w*0.3 + 2, obs.y + obs.h*0.4 - 2, 3, 0, 2*Math.PI);
+                ctx.fill();
+            } else {
+                ctx.fillStyle = '#ffd966';
+                ctx.font = 'bold 28px Arial';
+                ctx.fillText('🏁', obs.x + 5, obs.y - 15);
+            }
+        }
+        
+        // Игрок
+        ctx.shadowBlur = 20;
+        ctx.shadowColor = '#000';
+        
+        let mode = MODES[player.modeIndex];
+        ctx.fillStyle = mode.color;
+        
+        // Отрисовка в зависимости от режима
+        if (player.modeIndex === 0) { // Куб
+            ctx.fillRect(player.x - 16, player.y - 16, 32, 32);
+            ctx.strokeStyle = '#008b9f';
+            ctx.lineWidth = 5;
+            ctx.strokeRect(player.x - 16, player.y - 16, 32, 32);
+            
+            ctx.fillStyle = '#fff8e7';
+            ctx.beginPath();
+            ctx.arc(player.x - 7, player.y - 6, 5, 0, 2*Math.PI);
+            ctx.arc(player.x + 7, player.y - 6, 5, 0, 2*Math.PI);
+            ctx.fill();
+            ctx.fillStyle = '#1a1a1a';
+            ctx.beginPath();
+            ctx.arc(player.x - 8, player.y - 8, 2, 0, 2*Math.PI);
+            ctx.arc(player.x + 6, player.y - 8, 2, 0, 2*Math.PI);
+            ctx.fill();
+        }
+        else if (player.modeIndex === 1) { // Корабль
+            ctx.beginPath();
+            ctx.moveTo(player.x - 20, player.y - 12);
+            ctx.lineTo(player.x + 14, player.y - 12);
+            ctx.lineTo(player.x + 22, player.y - 4);
+            ctx.lineTo(player.x + 22, player.y + 4);
+            ctx.lineTo(player.x + 14, player.y + 12);
+            ctx.lineTo(player.x - 20, player.y + 12);
+            ctx.closePath();
+            ctx.fill();
+        }
+        else if (player.modeIndex === 2) { // Волна
+            ctx.beginPath();
+            ctx.moveTo(player.x - 16, player.y);
+            ctx.lineTo(player.x, player.y - 16);
+            ctx.lineTo(player.x + 16, player.y);
+            ctx.lineTo(player.x, player.y + 16);
+            ctx.closePath();
+            ctx.fill();
+        }
+        else if (player.modeIndex === 3) { // Тарелка
+            ctx.beginPath();
+            ctx.ellipse(player.x, player.y, 18, 12, 0, 0, 2*Math.PI);
+            ctx.fill();
+        }
+        else if (player.modeIndex === 4) { // Шар
+            ctx.beginPath();
+            ctx.arc(player.x, player.y, 16, 0, 2*Math.PI);
+            ctx.fill();
+        }
+        else if (player.modeIndex === 5) { // Робот
+            ctx.fillRect(player.x - 14, player.y - 16, 28, 32);
+            ctx.fillStyle = '#aaffaa';
+            ctx.beginPath();
+            ctx.ellipse(player.x, player.y - 20, 10, 8, 0, 0, 2*Math.PI);
+            ctx.fill();
+        }
+        else if (player.modeIndex === 6) { // Змей
+            for (let i = 0; i < 5; i++) {
+                ctx.fillStyle = mode.color;
+                ctx.globalAlpha = 1 - i * 0.2;
+                ctx.fillRect(player.x - 16 - i * 8, player.y - 16, 24, 32);
+            }
+            ctx.globalAlpha = 1;
+        }
+        else if (player.modeIndex === 7) { // Призрак
+            ctx.globalAlpha = player.ghostMode ? 0.5 : 1;
+            ctx.fillRect(player.x - 16, player.y - 16, 32, 32);
+            ctx.globalAlpha = 1;
+        }
+        else if (player.modeIndex === 8) { // Магнит
+            ctx.beginPath();
+            ctx.ellipse(player.x, player.y, 20, 16, 0, 0, 2*Math.PI);
+            ctx.fill();
+        }
+        else if (player.modeIndex === 9) { // Хаос
+            ctx.fillStyle = '#ff5555';
+            for (let i = 0; i < 8; i++) {
+                let angle = (i / 8) * Math.PI * 2 + frame * 0.1;
+                ctx.fillRect(
+                    player.x + Math.cos(angle) * 20 - 8,
+                    player.y + Math.sin(angle) * 20 - 8,
+                    16, 16
+                );
+            }
+        }
+        
+        ctx.shadowBlur = 0;
+        
+        // Текст
+        if (gameOver) {
+            ctx.font = 'bold 100px "Arial Black"';
+            ctx.fillStyle = '#ff4755';
+            ctx.strokeStyle = '#5f0000';
+            ctx.lineWidth = 15;
+            ctx.shadowBlur = 40;
+            ctx.shadowColor = '#c33';
+            ctx.textAlign = 'center';
+            ctx.strokeText('GAME OVER', 600, 320);
+            ctx.fillText('GAME OVER', 600, 320);
+        } else if (gameCompleted) {
+            ctx.font = 'bold 90px "Arial Black"';
+            ctx.fillStyle = '#7fffd4';
+            ctx.strokeStyle = '#146b44';
+            ctx.lineWidth = 15;
+            ctx.shadowBlur = 40;
+            ctx.shadowColor = '#1d8b6e';
+            ctx.strokeText('LEVEL COMPLETE', 600, 320);
+            ctx.fillText('LEVEL COMPLETE', 600, 320);
+        } else if (!gameStarted) {
+            ctx.font = 'bold 80px "Arial Black"';
+            ctx.fillStyle = '#e8ffcf';
+            ctx.strokeStyle = '#146b44';
+            ctx.lineWidth = 12;
+            ctx.shadowBlur = 30;
+            ctx.strokeText('НАЖМИ ПРОБЕЛ', 600, 320);
+            ctx.fillText('НАЖМИ ПРОБЕЛ', 600, 320);
+        }
+        
+        // Информация
+        if (gameStarted && !gameOver && !gameCompleted) {
+            ctx.font = 'bold 26px "Arial Black"';
+            ctx.fillStyle = '#aaffdd';
+            ctx.textAlign = 'left';
+            ctx.fillText(mode.desc, 30, 70);
+            
+            ctx.fillStyle = '#ffd966';
+            ctx.font = 'bold 32px "Arial Black"';
+            ctx.fillText('⚡ ' + Math.floor(score), 1100, 70);
+            
+            // Индикаторы режимов
+            for (let i = 0; i < MODES.length; i++) {
+                let x = 30 + i * 50;
+                let y = 550;
+                ctx.fillStyle = i === player.modeIndex ? MODES[i].color : '#555';
+                ctx.globalAlpha = i === player.modeIndex ? 1 : 0.3;
+                ctx.beginPath();
+                ctx.arc(x, y, 15, 0, 2*Math.PI);
+                ctx.fill();
+            }
+            ctx.globalAlpha = 1;
+        }
+        
+        scoreSpan.innerText = String(score).padStart(6, '0');
+    }
+    
+    // ========== УПРАВЛЕНИЕ ==========
+    window.addEventListener('keydown', (e) => {
+        if (e.code === 'Space') {
+            e.preventDefault();
+            
+            if (!gameStarted && !gameOver && !gameCompleted) {
+                resetGame();
+                return;
+            }
+            
+            spaceDown = true;
+        }
+    });
+    
+    window.addEventListener('keyup', (e) => {
+        if (e.code === 'Space') {
+            e.preventDefault();
+            spaceDown = false;
+        }
+    });
+    
+    canvas.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        if (!gameStarted && !gameOver && !gameCompleted) {
+            resetGame();
+            return;
+        }
+        spaceDown = true;
+    });
+    
+    canvas.addEventListener('mouseup', () => {
+        spaceDown = false;
+    });
+    
+    canvas.addEventListener('mouseleave', () => {
+        spaceDown = false;
+    });
+    
+    canvas.addEventListener('contextmenu', (e) => e.preventDefault());
+    
+    // Кнопки биомов
+    biome1Btn.addEventListener('click', () => setBiome(0));
+    biome2Btn.addEventListener('click', () => setBiome(1));
+    biome3Btn.addEventListener('click', () => setBiome(2));
+    biome4Btn.addEventListener('click', () => setBiome(3));
+    resetBtn.addEventListener('click', resetGame);
+    
+    // Запуск
+    function gameLoop() {
+        update();
+        draw();
+        requestAnimationFrame(gameLoop);
+    }
+    gameLoop();
+    
+    // Начальное состояние
+    gameStarted = false;
+    gameOver = false;
+    gameCompleted = false;
+    modeSpan.innerText = MODES[0].name;
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vedgi - Каталог</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        :root {
+            --bg-color: #ffffff;
+            --text-color: #333;
+            --accent-color: #b8860b;
+            --card-bg: #ffffff;
+            --border-color: #ddd;
+        }
+
+        body.dark-theme {
+            --bg-color: #1a1a1a;
+            --text-color: #f0f0f0;
+            --card-bg: #2d2d2d;
+            --border-color: #444;
+        }
+
+        .header {
+            background: var(--card-bg);
+            border-bottom: 1px solid var(--border-color);
+            padding: 15px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo a {
+            font-family: 'Cinzel', serif;
+            font-size: 28px;
+            color: var(--accent-color);
+            text-decoration: none;
+        }
+
+        .nav-list {
+            display: flex;
+            list-style: none;
+            gap: 30px;
+        }
+
+        .nav-list a {
+            color: var(--text-color);
+            text-decoration: none;
+        }
+
+        .nav-list a.active {
+            color: var(--accent-color);
+        }
+
+        .auth-buttons {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .btn-login {
+            padding: 8px 20px;
+            background: transparent;
+            border: 2px solid var(--accent-color);
+            color: var(--accent-color);
+            text-decoration: none;
+            border-radius: 5px;
+        }
+
+        .btn-register {
+            padding: 8px 20px;
+            background: var(--accent-color);
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+
+        .user-menu {
+            position: relative;
+            cursor: pointer;
+        }
+
+        .user-name {
+            padding: 8px 20px;
+            background: var(--accent-color);
+            color: white;
+            border-radius: 5px;
+            display: inline-block;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .user-name:hover {
+            opacity: 0.9;
+        }
+
+        .user-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            width: 220px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin-top: 5px;
+            display: none;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            z-index: 1000;
+        }
+
+        .user-dropdown.show {
+            display: block;
+        }
+
+        .user-dropdown a {
+            display: block;
+            padding: 12px 20px;
+            color: var(--text-color);
+            text-decoration: none;
+            border-bottom: 1px solid var(--border-color);
+            transition: background 0.3s;
+        }
+
+        .user-dropdown a:last-child {
+            border-bottom: none;
+        }
+
+        .user-dropdown a:hover {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        .cart-icon {
+            position: relative;
+            margin-right: 15px;
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        .cart-count {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: var(--accent-color);
+            color: white;
+            font-size: 12px;
+            padding: 2px 6px;
+            border-radius: 50%;
+        }
+
+        .theme-toggle {
+            background: none;
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 5px 15px;
+            cursor: pointer;
+        }
+
+        .page-title {
+            font-family: 'Cinzel', serif;
+            font-size: 36px;
+            text-align: center;
+            margin: 40px 0;
+            color: var(--accent-color);
+        }
+
+        .filters {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 40px;
+        }
+
+        .filter-btn {
+            padding: 10px 25px;
+            background: transparent;
+            border: 2px solid var(--accent-color);
+            color: var(--accent-color);
+            cursor: pointer;
+            border-radius: 5px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .filter-btn:hover,
+        .filter-btn.active {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        .catalog-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 30px;
+            margin: 40px 0;
+        }
+
+        .product-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            overflow: hidden;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        .product-image {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .product-info {
+            padding: 20px;
+        }
+
+        .product-title {
+            font-family: 'Cinzel', serif;
+            font-size: 20px;
+            margin-bottom: 10px;
+        }
+
+        .product-category {
+            color: var(--accent-color);
+            margin-bottom: 10px;
+            font-size: 14px;
+            text-transform: uppercase;
+        }
+
+        .product-price {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--accent-color);
+            margin: 15px 0;
+        }
+
+        .product-stock {
+            font-size: 14px;
+            margin-bottom: 15px;
+            color: var(--text-color);
+        }
+
+        .in-stock {
+            color: #28a745;
+        }
+
+        .out-of-stock {
+            color: #dc3545;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px;
+            background: var(--accent-color);
+            color: white;
+            text-decoration: none;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-align: center;
+            font-weight: 600;
+            transition: opacity 0.3s;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--accent-color);
+            color: var(--accent-color);
+        }
+
+        .btn-outline:hover {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        .product-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .product-actions .btn {
+            flex: 1;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            border-top: 1px solid var(--border-color);
+            margin-top: auto;
+        }
+
+        @media (max-width: 768px) {
+            .product-actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="container header-container">
+            <div class="logo">
+                <a href="index.html">Vedgi</a>
+            </div>
+            <nav class="nav">
+                <ul class="nav-list">
+                    <li><a href="index.html">Главная</a></li>
+                    <li><a href="catalog.html" class="active">Каталог</a></li>
+                    <li><a href="cart.html">Корзина 🛒</a></li>
+                    <li><a href="profile.html">Профиль</a></li>
+                    <li><a href="about.html">О бренде</a></li>
+                    <li><a href="contacts.html">Контакты</a></li>
+                </ul>
+            </nav>
+            <div class="auth-buttons" id="authButtons"></div>
+            <button id="themeToggle" class="theme-toggle">🌙</button>
+        </div>
+    </header>
+
+    <main>
+        <div class="container">
+            <h1 class="page-title">Каталог товаров</h1>
+            
+            <div class="filters">
+                <button class="filter-btn active" onclick="filterProducts('all')">Все</button>
+                <button class="filter-btn" onclick="filterProducts('male')">Мужские</button>
+                <button class="filter-btn" onclick="filterProducts('female')">Женские</button>
+                <button class="filter-btn" onclick="filterProducts('unisex')">Унисекс</button>
+            </div>
+
+            <div class="catalog-grid" id="catalogGrid">
+                <!-- Товары загружаются через JS -->
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <p>&copy; 2026 Vedgi. Все права защищены Traider INC Corporation.</p>
+    </footer>
+
+    <script src="database.js"></script>
+    <script>
+        // ============= АВТОРИЗАЦИЯ =============
+        let currentUser = null;
+        const WEEKLY_LIMIT = 100; // Максимум штук в неделю на пользователя
+
+        function updateHeader() {
+            const authButtons = document.getElementById('authButtons');
+            const currentUserData = localStorage.getItem('current_user');
+            
+            if (currentUserData) {
+                const user = JSON.parse(currentUserData);
+                currentUser = user;
+                authButtons.innerHTML = `
+                    <div class="user-menu">
+                        <span class="user-name" onclick="toggleMenu(event)">${user.name} ▼</span>
+                        <div class="user-dropdown" id="userDropdown">
+                            <a href="profile.html">👤 Личный кабинет</a>
+                            ${user.role === 'admin' ? '<a href="admin.html">⚙️ Админ-панель</a>' : ''}
+                            <a href="#" onclick="logout(); return false;">🚪 Выйти</a>
+                        </div>
+                    </div>
+                `;
+            } else {
+                authButtons.innerHTML = `
+                    <a href="login.html" class="btn-login">Войти</a>
+                    <a href="login.html?register=true" class="btn-register">Регистрация</a>
+                `;
+            }
+        }
+
+        function toggleMenu(event) {
+            event.stopPropagation();
+            const dropdown = document.getElementById('userDropdown');
+            if (dropdown) {
+                dropdown.classList.toggle('show');
+            }
+        }
+
+        document.addEventListener('click', function() {
+            const dropdown = document.getElementById('userDropdown');
+            if (dropdown) {
+                dropdown.classList.remove('show');
+            }
+        });
+
+        function logout() {
+            localStorage.removeItem('current_user');
+            updateHeader();
+            window.location.href = 'index.html';
+        }
+
+        // ============= ФУНКЦИИ ДЛЯ НЕДЕЛЬНОГО ЛИМИТА =============
+        function getWeeklyPurchasedCount(userId, productId) {
+            if (!userId) return 0;
+            const weeklyKey = `weekly_purchases_${userId}`;
+            const purchases = JSON.parse(localStorage.getItem(weeklyKey)) || [];
+            const oneWeekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+            
+            return purchases
+                .filter(p => p.productId === productId && p.timestamp > oneWeekAgo)
+                .reduce((sum, p) => sum + p.quantity, 0);
+        }
+
+        function recordWeeklyPurchase(userId, productId, quantity) {
+            if (!userId) return;
+            const weeklyKey = `weekly_purchases_${userId}`;
+            const purchases = JSON.parse(localStorage.getItem(weeklyKey)) || [];
+            
+            purchases.push({
+                productId: productId,
+                quantity: quantity,
+                timestamp: Date.now()
+            });
+            
+            localStorage.setItem(weeklyKey, JSON.stringify(purchases));
+        }
+
+        // ============= ТОВАРЫ =============
+        const PRODUCTS_KEY = 'vedgi_products';
+
+        // Инициализация товаров с реальными картинками и количеством
+        if (!localStorage.getItem(PRODUCTS_KEY)) {
+            const products = [
+                { 
+                    id: 'p1', 
+                    name: 'Черный Император', 
+                    category: 'male', 
+                    price: 18500, 
+                    oldPrice: 22000,
+                    image: 'https://images.unsplash.com/photo-1594035910387-fea47794261f?w=300',
+                    description: 'Древесно-пряный аромат с нотами черного перца, кедра и кожи.',
+                    type: 'Древесный',
+                    volume: '50 мл',
+                    inStock: true,
+                    quantity: 15,
+                    sold: 0
+                },
+                { 
+                    id: 'p2', 
+                    name: 'Королевская ночь', 
+                    category: 'female', 
+                    price: 22000, 
+                    oldPrice: 25000,
+                    image: 'https://images.unsplash.com/photo-1541643600914-78b084683601?w=300',
+                    description: 'Восточно-цветочный аромат с розой, жасмином и удам.',
+                    type: 'Цветочный',
+                    volume: '50 мл',
+                    inStock: true,
+                    quantity: 8,
+                    sold: 0
+                },
+                { 
+                    id: 'p3', 
+                    name: 'Белый ворон', 
+                    category: 'unisex', 
+                    price: 26000, 
+                    image: 'https://images.unsplash.com/photo-1615634260162-2032185b1de8?w=300',
+                    description: 'Альдегидный аромат с ирисом, мускусом и дубовым мхом.',
+                    type: 'Альдегидный',
+                    volume: '50 мл',
+                    inStock: true,
+                    quantity: 5,
+                    sold: 0
+                },
+                { 
+                    id: 'p4', 
+                    name: 'Стальной характер', 
+                    category: 'male', 
+                    price: 21000, 
+                    image: 'https://images.unsplash.com/photo-1619994403073-2cd6a8f46b7b?w=300',
+                    description: 'Холодный, уверенный аромат с бергамотом, ветивером и амброй.',
+                    type: 'Цитрусовый',
+                    volume: '50 мл',
+                    inStock: true,
+                    quantity: 12,
+                    sold: 0
+                },
+                { 
+                    id: 'p5', 
+                    name: 'Алмазная королева', 
+                    category: 'female', 
+                    price: 24500, 
+                    image: 'https://images.unsplash.com/photo-1523293182086-7651a899d37f?w=300',
+                    description: 'Изысканный аромат с ирисом, ванилью и белым мускусом.',
+                    type: 'Пудровый',
+                    volume: '50 мл',
+                    inStock: true,
+                    quantity: 7,
+                    sold: 0
+                },
+                { 
+                    id: 'p6', 
+                    name: 'Теневой совет', 
+                    category: 'unisex', 
+                    price: 28000, 
+                    image: 'https://images.unsplash.com/photo-1587017539504-67cfbddac569?w=300',
+                    description: 'Мистический аромат с ладаном, табаком и удом.',
+                    type: 'Дымный',
+                    volume: '50 мл',
+                    inStock: true,
+                    quantity: 3,
+                    sold: 0
+                }
+            ];
+            localStorage.setItem(PRODUCTS_KEY, JSON.stringify(products));
+        }
+
+        function loadProducts() {
+            const products = JSON.parse(localStorage.getItem(PRODUCTS_KEY)) || [];
+            const grid = document.getElementById('catalogGrid');
+            
+            grid.innerHTML = products.map(p => {
+                const stockStatus = p.inStock ? 
+                    `<span class="in-stock">✓ В наличии (${p.quantity} шт.)</span>` : 
+                    `<span class="out-of-stock">✗ Нет в наличии</span>`;
+                
+                const oldPriceHtml = p.oldPrice ? 
+                    `<span style="text-decoration: line-through; opacity: 0.5; font-size: 16px; margin-right: 10px;">${p.oldPrice.toLocaleString()} ₽</span>` : 
+                    '';
+
+                return `
+                    <div class="product-card" data-category="${p.category}">
+                        <img src="${p.image}" alt="${p.name}" class="product-image" onerror="this.src='https://via.placeholder.com/300x250?text=${p.name}'">
+                        <div class="product-info">
+                            <div class="product-category">${getCategoryName(p.category)}</div>
+                            <h3 class="product-title">${p.name}</h3>
+                            <p style="margin: 10px 0; opacity: 0.8; font-size: 14px;">${p.description}</p>
+                            <div class="product-price">
+                                ${oldPriceHtml}
+                                ${p.price.toLocaleString()} ₽
+                            </div>
+                            <div class="product-stock">${stockStatus}</div>
+                            ${p.inStock ? `
+                                <div class="product-actions">
+                                    <button class="btn" onclick="addToCart('${p.id}')">В корзину</button>
+                                    <button class="btn btn-outline" onclick="buyNow('${p.id}')">Купить</button>
+                                </div>
+                            ` : `
+                                <button class="btn" disabled style="opacity: 0.5; cursor: not-allowed;">Нет в наличии</button>
+                            `}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function getCategoryName(category) {
+            const names = {
+                'male': 'Мужской аромат',
+                'female': 'Женский аромат',
+                'unisex': 'Унисекс'
+            };
+            return names[category] || category;
+        }
+
+        function filterProducts(category) {
+            const buttons = document.querySelectorAll('.filter-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            const products = document.querySelectorAll('.product-card');
+            products.forEach(p => {
+                if (category === 'all' || p.dataset.category === category) {
+                    p.style.display = 'block';
+                } else {
+                    p.style.display = 'none';
+                }
+            });
+        }
+
+        // ============= ФУНКЦИИ КОРЗИНЫ С ПРОВЕРКАМИ =============
+        function addToCart(productId) {
+            if (!currentUser) {
+                if (confirm('Для добавления в корзину нужно войти. Перейти на страницу входа?')) {
+                    window.location.href = 'login.html';
+                }
+                return;
+            }
+            
+            const products = JSON.parse(localStorage.getItem('vedgi_products')) || [];
+            const product = products.find(p => p.id === productId);
+            
+            if (!product) {
+                alert('❌ Товар не найден');
+                return;
+            }
+            
+            if (product.quantity <= 0) {
+                alert('❌ Товара нет в наличии');
+                return;
+            }
+            
+            let cart = JSON.parse(localStorage.getItem(`cart_${currentUser.id}`)) || [];
+            const existingItem = cart.find(item => item.productId === productId);
+            
+            // Текущее количество в корзине
+            let currentQuantityInCart = existingItem ? existingItem.quantity : 0;
+            
+            // Проверка: не превышает ли новый лимит остаток на складе
+            if (currentQuantityInCart + 1 > product.quantity) {
+                alert(`❌ Нельзя добавить больше. На складе осталось только ${product.quantity} шт.`);
+                return;
+            }
+            
+            // Проверка недельного лимита (учитывая уже купленное и то, что в корзине)
+            let weeklyPurchased = getWeeklyPurchasedCount(currentUser.id, productId);
+            if (weeklyPurchased + currentQuantityInCart + 1 > WEEKLY_LIMIT) {
+                alert(`❌ Вы не можете купить больше ${WEEKLY_LIMIT} единиц этого товара в неделю. Уже куплено/в корзине: ${weeklyPurchased + currentQuantityInCart}`);
+                return;
+            }
+            
+            if (existingItem) {
+                existingItem.quantity += 1;
+            } else {
+                cart.push({
+                    productId: product.id,
+                    name: product.name,
+                    price: product.price,
+                    image: product.image,
+                    description: product.description || 'Элитный аромат с уникальным букетом',
+                    type: product.type || 'Парфюмерная вода',
+                    category: product.category || 'unisex',
+                    quantity: 1
+                });
+            }
+            
+            localStorage.setItem(`cart_${currentUser.id}`, JSON.stringify(cart));
+            alert('✅ Товар добавлен в корзину');
+        }
+
+        function buyNow(productId) {
+            if (!currentUser) {
+                if (confirm('Для покупки нужно войти. Перейти на страницу входа?')) {
+                    window.location.href = 'login.html';
+                }
+                return;
+            }
+            
+            const products = JSON.parse(localStorage.getItem('vedgi_products')) || [];
+            const product = products.find(p => p.id === productId);
+            
+            if (!product) {
+                alert('❌ Товар не найден');
+                return;
+            }
+            
+            if (product.quantity <= 0) {
+                alert('❌ Товара нет в наличии');
+                return;
+            }
+            
+            let cart = JSON.parse(localStorage.getItem(`cart_${currentUser.id}`)) || [];
+            const existingItem = cart.find(item => item.productId === productId);
+            
+            // Те же проверки, что и в addToCart
+            let currentQuantityInCart = existingItem ? existingItem.quantity : 0;
+            
+            if (currentQuantityInCart + 1 > product.quantity) {
+                alert(`❌ Нельзя добавить больше. На складе осталось только ${product.quantity} шт.`);
+                return;
+            }
+            
+            let weeklyPurchased = getWeeklyPurchasedCount(currentUser.id, productId);
+            if (weeklyPurchased + currentQuantityInCart + 1 > WEEKLY_LIMIT) {
+                alert(`❌ Вы не можете купить больше ${WEEKLY_LIMIT} единиц этого товара в неделю. Уже куплено/в корзине: ${weeklyPurchased + currentQuantityInCart}`);
+                return;
+            }
+            
+            if (existingItem) {
+                existingItem.quantity += 1;
+            } else {
+                cart.push({
+                    productId: product.id,
+                    name: product.name,
+                    price: product.price,
+                    image: product.image,
+                    description: product.description || 'Элитный аромат с уникальным букетом',
+                    type: product.type || 'Парфюмерная вода',
+                    category: product.category || 'unisex',
+                    quantity: 1
+                });
+            }
+            
+            localStorage.setItem(`cart_${currentUser.id}`, JSON.stringify(cart));
+            window.location.href = 'cart.html';
+        }
+
+        // ============= ТЕМА =============
+        const themeToggle = document.getElementById('themeToggle');
+        themeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('dark-theme');
+            themeToggle.textContent = document.body.classList.contains('dark-theme') ? '☀️' : '🌙';
+            localStorage.setItem('vedgi_theme', document.body.classList.contains('dark-theme') ? 'dark' : 'light');
+        });
+
+        const savedTheme = localStorage.getItem('vedgi_theme');
+        if (savedTheme === 'dark') {
+            document.body.classList.add('dark-theme');
+            themeToggle.textContent = '☀️';
+        }
+
+        // ============= ЗАГРУЗКА =============
+        document.addEventListener('DOMContentLoaded', () => {
+            updateHeader();
+            loadProducts();
+        });
+    </script>
+</body>
+</html>

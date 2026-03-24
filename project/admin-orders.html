@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vedgi - Управление заказами</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        :root {
+            --bg-color: #ffffff;
+            --text-color: #333;
+            --accent-color: #b8860b;
+            --card-bg: #ffffff;
+            --border-color: #ddd;
+        }
+
+        body.dark-theme {
+            --bg-color: #1a1a1a;
+            --text-color: #f0f0f0;
+            --card-bg: #2d2d2d;
+            --border-color: #444;
+        }
+
+        .header {
+            background: var(--card-bg);
+            border-bottom: 1px solid var(--border-color);
+            padding: 15px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo a {
+            font-family: 'Cinzel', serif;
+            font-size: 28px;
+            color: var(--accent-color);
+            text-decoration: none;
+        }
+
+        .nav-list {
+            display: flex;
+            list-style: none;
+            gap: 30px;
+        }
+
+        .nav-list a {
+            color: var(--text-color);
+            text-decoration: none;
+        }
+
+        .nav-list a.active {
+            color: var(--accent-color);
+        }
+
+        .auth-buttons {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .user-menu {
+            position: relative;
+            cursor: pointer;
+        }
+
+        .user-name {
+            padding: 8px 20px;
+            background: var(--accent-color);
+            color: white;
+            border-radius: 5px;
+            display: inline-block;
+            cursor: pointer;
+        }
+
+        .user-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            width: 220px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin-top: 5px;
+            display: none;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .user-dropdown.show {
+            display: block;
+        }
+
+        .user-dropdown a {
+            display: block;
+            padding: 12px 20px;
+            color: var(--text-color);
+            text-decoration: none;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .user-dropdown a:hover {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        .theme-toggle {
+            background: none;
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 5px 15px;
+            cursor: pointer;
+        }
+
+        .page-title {
+            font-family: 'Cinzel', serif;
+            font-size: 36px;
+            text-align: center;
+            margin: 40px 0;
+            color: var(--accent-color);
+        }
+
+        .admin-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 40px;
+        }
+
+        .admin-tab {
+            padding: 12px 30px;
+            background: transparent;
+            border: 2px solid var(--accent-color);
+            color: var(--accent-color);
+            cursor: pointer;
+            border-radius: 5px;
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .admin-tab:hover,
+        .admin-tab.active {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 25px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 36px;
+            font-weight: 700;
+            color: var(--accent-color);
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+
+        .filters {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .filter-select {
+            padding: 12px 20px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            background: var(--bg-color);
+            color: var(--text-color);
+            font-size: 16px;
+        }
+
+        .orders-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .orders-table th {
+            background: var(--accent-color);
+            color: white;
+            padding: 15px;
+            text-align: left;
+        }
+
+        .orders-table td {
+            padding: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .orders-table tr:hover {
+            background: var(--border-color);
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-new { background: #ffc107; color: #000; }
+        .status-processing { background: #17a2b8; color: white; }
+        .status-delivered { background: #28a745; color: white; }
+        .status-cancelled { background: #dc3545; color: white; }
+
+        .status-select {
+            padding: 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            background: var(--bg-color);
+            color: var(--text-color);
+        }
+
+        .btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .btn-edit {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        .product-stock {
+            font-size: 14px;
+            color: var(--accent-color);
+            font-weight: 600;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            border-top: 1px solid var(--border-color);
+            margin-top: auto;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="container header-container">
+            <div class="logo">
+                <a href="index.html">Vedgi</a>
+            </div>
+            <nav class="nav">
+                <ul class="nav-list">
+                    <li><a href="index.html">Главная</a></li>
+                    <li><a href="catalog.html">Каталог</a></li>
+                    <li><a href="about.html">О бренде</a></li>
+                    <li><a href="contacts.html">Контакты</a></li>
+                </ul>
+            </nav>
+            <div class="auth-buttons" id="authButtons"></div>
+            <button id="themeToggle" class="theme-toggle">🌙</button>
+        </div>
+    </header>
+
+    <main>
+        <div class="container">
+            <h1 class="page-title">Управление заказами</h1>
+
+            <div class="admin-tabs">
+                <a href="admin.html" class="admin-tab">Товары</a>
+                <a href="admin-orders.html" class="admin-tab active">Заказы</a>
+                <a href="admin-messages.html" class="admin-tab">Сообщения</a>
+            </div>
+
+            <div class="stats-grid" id="statsContainer">
+                <!-- Статистика загружается -->
+            </div>
+
+            <div class="filters">
+                <select class="filter-select" id="statusFilter" onchange="filterOrders()">
+                    <option value="all">Все заказы</option>
+                    <option value="new">Новые</option>
+                    <option value="processing">В обработке</option>
+                    <option value="delivered">Доставленные</option>
+                    <option value="cancelled">Отмененные</option>
+                </select>
+            </div>
+
+            <table class="orders-table" id="ordersTable">
+                <thead>
+                    <tr>
+                        <th>№ заказа</th>
+                        <th>Дата</th>
+                        <th>Покупатель</th>
+                        <th>Товары</th>
+                        <th>Сумма</th>
+                        <th>Статус</th>
+                        <th>Оплата</th>
+                        <th>Действия</th>
+                    </tr>
+                </thead>
+                <tbody id="ordersBody">
+                    <!-- Заказы загружаются -->
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <p>&copy; 2026 Vedgi. Все права защищены Traider INC Corporation.</p>
+    </footer>
+
+    <script src="database.js"></script>
+    <script>
+        let currentUser = null;
+        let currentFilter = 'all';
+
+        function updateHeader() {
+            const authButtons = document.getElementById('authButtons');
+            const currentUserData = localStorage.getItem('current_user');
+            
+            if (currentUserData) {
+                const user = JSON.parse(currentUserData);
+                currentUser = user;
+                authButtons.innerHTML = `
+                    <div class="user-menu">
+                        <span class="user-name" onclick="toggleMenu(event)">${user.name} ▼</span>
+                        <div class="user-dropdown" id="userDropdown">
+                            <a href="profile.html">👤 Личный кабинет</a>
+                            ${user.role === 'admin' ? '<a href="admin.html">⚙️ Товары</a>' : ''}
+                            ${user.role === 'admin' ? '<a href="admin-orders.html">📦 Заказы</a>' : ''}
+                            ${user.role === 'admin' ? '<a href="admin-messages.html">📬 Сообщения</a>' : ''}
+                            <a href="#" onclick="logout(); return false;">🚪 Выйти</a>
+                        </div>
+                    </div>
+                `;
+            } else {
+                window.location.href = 'login.html';
+            }
+        }
+
+        function toggleMenu(event) {
+            event.stopPropagation();
+            const dropdown = document.getElementById('userDropdown');
+            if (dropdown) {
+                dropdown.classList.toggle('show');
+            }
+        }
+
+        document.addEventListener('click', function() {
+            const dropdown = document.getElementById('userDropdown');
+            if (dropdown) {
+                dropdown.classList.remove('show');
+            }
+        });
+
+        function logout() {
+            localStorage.removeItem('current_user');
+            window.location.href = 'index.html';
+        }
+
+        function loadStats() {
+            const stats = db.getOrdersStats();
+            const products = db.getProducts();
+            
+            const totalStock = products.reduce((sum, p) => sum + (p.quantity || 0), 0);
+            
+            document.getElementById('statsContainer').innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-value">${stats.total}</div>
+                    <div class="stat-label">Всего заказов</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${stats.new}</div>
+                    <div class="stat-label">Новых</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${stats.processing}</div>
+                    <div class="stat-label">В обработке</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${stats.delivered}</div>
+                    <div class="stat-label">Доставлено</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${stats.revenue.toLocaleString()} ₽</div>
+                    <div class="stat-label">Выручка</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${totalStock}</div>
+                    <div class="stat-label">Товаров на складе</div>
+                </div>
+            `;
+        }
+
+        function loadOrders() {
+            const orders = db.getOrders();
+            const users = db.getUsers();
+            const products = db.getProducts();
+            
+            let filteredOrders = orders;
+            if (currentFilter !== 'all') {
+                filteredOrders = orders.filter(o => o.status === currentFilter);
+            }
+
+            // Сортировка по дате (сначала новые)
+            filteredOrders.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            const tbody = document.getElementById('ordersBody');
+            
+            tbody.innerHTML = filteredOrders.map(order => {
+                const user = users.find(u => u.id === order.userId);
+                return `
+                    <tr>
+                        <td>#${order.id.slice(-6)}</td>
+                        <td>${order.date}</td>
+                        <td>
+                            ${user?.name || 'Неизвестно'}<br>
+                            <small>${user?.email || ''}</small>
+                        </td>
+                        <td>
+                            ${order.items.map(item => `
+                                ${item.name} (${item.quantity} шт.)<br>
+                            `).join('')}
+                        </td>
+                        <td>${order.total.toLocaleString()} ₽</td>
+                        <td>
+                            <select class="status-select" onchange="updateStatus('${order.id}', this.value)">
+                                <option value="new" ${order.status === 'new' ? 'selected' : ''}>Новый</option>
+                                <option value="processing" ${order.status === 'processing' ? 'selected' : ''}>В обработке</option>
+                                <option value="delivered" ${order.status === 'delivered' ? 'selected' : ''}>Доставлен</option>
+                                <option value="cancelled" ${order.status === 'cancelled' ? 'selected' : ''}>Отменен</option>
+                            </select>
+                        </td>
+                        <td>${order.paymentMethod === 'card' ? '💳 Карта' : '💵 Наличные'}</td>
+                        <td>
+                            <button class="btn btn-edit" onclick="viewOrder('${order.id}')">👁️</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function filterOrders() {
+            currentFilter = document.getElementById('statusFilter').value;
+            loadOrders();
+        }
+
+        function updateStatus(orderId, newStatus) {
+            db.updateOrderStatus(orderId, newStatus);
+            loadStats();
+            loadOrders();
+        }
+
+        function viewOrder(orderId) {
+            const orders = db.getOrders();
+            const order = orders.find(o => o.id === orderId);
+            
+            alert(`
+                Заказ #${orderId}
+                Дата: ${order.date}
+                Сумма: ${order.total.toLocaleString()} ₽
+                Статус: ${order.status}
+                Оплата: ${order.paymentMethod === 'card' ? 'Карта' : 'Наличные'}
+                Адрес: ${order.address}
+                
+                Товары:
+                ${order.items.map(i => `- ${i.name} (${i.quantity} шт.) - ${(i.price * i.quantity).toLocaleString()} ₽`).join('\n')}
+            `);
+        }
+
+        const themeToggle = document.getElementById('themeToggle');
+        themeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('dark-theme');
+            themeToggle.textContent = document.body.classList.contains('dark-theme') ? '☀️' : '🌙';
+            localStorage.setItem('vedgi_theme', document.body.classList.contains('dark-theme') ? 'dark' : 'light');
+        });
+
+        const savedTheme = localStorage.getItem('vedgi_theme');
+        if (savedTheme === 'dark') {
+            document.body.classList.add('dark-theme');
+            themeToggle.textContent = '☀️';
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            updateHeader();
+            
+            if (currentUser?.role !== 'admin') {
+                window.location.href = 'index.html';
+                return;
+            }
+            
+            loadStats();
+            loadOrders();
+        });
+    </script>
+</body>
+</html>

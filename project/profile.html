@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vedgi - Личный кабинет</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: var(--card-bg);
+            border-bottom: 1px solid var(--border-color);
+            padding: 15px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo a {
+            font-family: 'Cinzel', serif;
+            font-size: 28px;
+            color: var(--accent-color);
+            text-decoration: none;
+        }
+
+        .nav-list {
+            display: flex;
+            list-style: none;
+            gap: 30px;
+        }
+
+        .nav-list a {
+            color: var(--text-color);
+            text-decoration: none;
+        }
+
+        .nav-list a.active {
+            color: var(--accent-color);
+        }
+
+        .auth-buttons {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .user-menu {
+            position: relative;
+            cursor: pointer;
+        }
+
+        .user-name {
+            padding: 8px 20px;
+            background: var(--accent-color);
+            color: white;
+            border-radius: 5px;
+            display: inline-block;
+            cursor: pointer;
+        }
+
+        .user-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            width: 220px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin-top: 5px;
+            display: none;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .user-dropdown.show {
+            display: block;
+        }
+
+        .user-dropdown a {
+            display: block;
+            padding: 12px 20px;
+            color: var(--text-color);
+            text-decoration: none;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .user-dropdown a:hover {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        .theme-toggle {
+            background: none;
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 5px 15px;
+            cursor: pointer;
+        }
+
+        .page-title {
+            font-family: 'Cinzel', serif;
+            font-size: 36px;
+            text-align: center;
+            margin: 40px 0;
+            color: var(--accent-color);
+        }
+
+        .profile-info {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+
+        .profile-info h2 {
+            margin-bottom: 15px;
+        }
+
+        .profile-info p {
+            margin: 8px 0;
+            opacity: 0.8;
+        }
+
+        .orders-table {
+            width: 100%;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .orders-table th {
+            background: var(--accent-color);
+            color: white;
+            padding: 15px;
+            text-align: left;
+        }
+
+        .orders-table td {
+            padding: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-new { background: #ffc107; color: #000; }
+        .status-processing { background: #17a2b8; color: white; }
+        .status-delivered { background: #28a745; color: white; }
+        .status-cancelled { background: #dc3545; color: white; }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            border-top: 1px solid var(--border-color);
+            margin-top: auto;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="container header-container">
+            <div class="logo">
+                <a href="index.html">Vedgi</a>
+            </div>
+            <nav class="nav">
+                <ul class="nav-list">
+                    <li><a href="index.html">Главная</a></li>
+                    <li><a href="catalog.html">Каталог</a></li>
+                    <li><a href="cart.html">Корзина 🛒</a></li>
+                    <li><a href="profile.html" class="active">Профиль</a></li>
+                    <li><a href="about.html">О бренде</a></li>
+                    <li><a href="contacts.html">Контакты</a></li>
+                </ul>
+            </nav>
+            <div class="auth-buttons" id="authButtons"></div>
+            <button id="themeToggle" class="theme-toggle">🌙</button>
+        </div>
+    </header>
+
+    <main class="container">
+        <h1 class="page-title">Личный кабинет</h1>
+        <div id="profileContent"></div>
+    </main>
+
+    <footer class="footer">
+        <p>&copy; 2026 Vedgi. Все права защищены Traider INC Corporation.</p>
+    </footer>
+
+    <script>
+        let currentUser = null;
+
+        function updateHeader() {
+            const authButtons = document.getElementById('authButtons');
+            const currentUserData = localStorage.getItem('current_user');
+            
+            if (currentUserData) {
+                const user = JSON.parse(currentUserData);
+                currentUser = user;
+                authButtons.innerHTML = `
+                    <div class="user-menu">
+                        <span class="user-name" onclick="toggleMenu(event)">${user.name} ▼</span>
+                        <div class="user-dropdown" id="userDropdown">
+                            <a href="profile.html">👤 Личный кабинет</a>
+                            ${user.role === 'admin' ? '<a href="admin.html">⚙️ Админ-панель</a>' : ''}
+                            <a href="#" onclick="logout(); return false;">🚪 Выйти</a>
+                        </div>
+                    </div>
+                `;
+            } else {
+                window.location.href = 'login.html';
+            }
+        }
+
+        function toggleMenu(event) {
+            event.stopPropagation();
+            const dropdown = document.getElementById('userDropdown');
+            dropdown.classList.toggle('show');
+        }
+
+        document.addEventListener('click', () => {
+            const dropdown = document.getElementById('userDropdown');
+            if (dropdown) dropdown.classList.remove('show');
+        });
+
+        function logout() {
+            localStorage.removeItem('current_user');
+            window.location.href = 'index.html';
+        }
+
+        function loadProfile() {
+    if (!currentUser) return;
+
+    // Получаем все заказы
+    const allOrders = JSON.parse(localStorage.getItem('vedgi_orders')) || [];
+    
+    // Фильтруем заказы текущего пользователя
+    const userOrders = allOrders.filter(order => order.userId === currentUser.id);
+
+    document.getElementById('profileContent').innerHTML = `
+        <div class="profile-info">
+            <h2>${currentUser.name}</h2>
+            <p><strong>Email:</strong> ${currentUser.email}</p>
+            <p><strong>Телефон:</strong> ${currentUser.phone || 'Не указан'}</p>
+        </div>
+
+        <h2>История заказов</h2>
+        ${userOrders.length > 0 ? `
+            <table class="orders-table">
+                <thead>
+                    <tr>
+                        <th>№ заказа</th>
+                        <th>Дата</th>
+                        <th>Товары</th>
+                        <th>Сумма</th>
+                        <th>Статус</th>
+                        <th>Адрес</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${userOrders.map(order => `
+                        <tr>
+                            <td><strong>${order.id}</strong></td>
+                            <td>${order.date}</td>
+                            <td>
+                                ${order.items.map(item => `${item.name} (${item.quantity} шт.)`).join('<br>')}
+                            </td>
+                            <td>${order.total.toLocaleString()} ₽</td>
+                            <td><span class="status-badge status-${order.status}">${getStatusText(order.status)}</span></td>
+                            <td>${order.address}</td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        ` : '<p style="text-align: center; padding: 40px;">У вас пока нет заказов</p>'}
+
+        <!-- ============= МОИ СООБЩЕНИЯ ============= -->
+        <div style="margin-top: 50px;">
+            <h2>Мои сообщения</h2>
+            <div id="userMessages"></div>
+        </div>
+    `;
+
+    // Загружаем сообщения пользователя
+    loadUserMessages();
+    // Функция для загрузки сообщений пользователя
+function loadUserMessages() {
+    if (!currentUser) return;
+    
+    const messages = JSON.parse(localStorage.getItem('vedgi_messages')) || [];
+    const userMessages = messages.filter(m => m.email === currentUser.email);
+    
+    const container = document.getElementById('userMessages');
+    
+    if (userMessages.length === 0) {
+        container.innerHTML = '<p style="text-align: center; padding: 20px;">У вас нет сообщений</p>';
+        return;
+    }
+    
+    // Сортируем по дате (сначала новые)
+    userMessages.sort((a, b) => new Date(b.date) - new Date(a.date));
+    
+    container.innerHTML = `
+        <div style="display: grid; gap: 15px;">
+            ${userMessages.map(msg => `
+                <div style="background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 10px; padding: 15px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                        <span style="font-weight: 600;">${msg.subject}</span>
+                        <span style="font-size: 12px; opacity: 0.7;">${msg.date}</span>
+                    </div>
+                    <div style="margin-bottom: 10px;">${msg.message}</div>
+                    ${msg.answer ? `
+                        <div style="background: var(--header-bg); padding: 10px; border-radius: 5px; margin-top: 10px; border-left: 3px solid var(--accent-color);">
+                            <strong>Ответ:</strong><br>
+                            ${msg.answer}
+                            <div style="font-size: 12px; margin-top: 5px;">${msg.answeredBy} • ${msg.answeredDate}</div>
+                        </div>
+                    ` : '<div style="color: #ffc107; font-size: 14px;">⏳ Ожидает ответа</div>'}
+                </div>
+            `).join('')}
+        </div>
+    `;
+}
+}
+                
+            
+
+        function getStatusText(status) {
+            const statuses = {
+                'new': 'Новый',
+                'processing': 'В обработке',
+                'delivered': 'Доставлен',
+                'cancelled': 'Отменен'
+            };
+            return statuses[status] || status;
+        }
+
+        const themeToggle = document.getElementById('themeToggle');
+        themeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('dark-theme');
+            themeToggle.textContent = document.body.classList.contains('dark-theme') ? '☀️' : '🌙';
+            localStorage.setItem('vedgi_theme', document.body.classList.contains('dark-theme') ? 'dark' : 'light');
+        });
+
+        const savedTheme = localStorage.getItem('vedgi_theme');
+        if (savedTheme === 'dark') {
+            document.body.classList.add('dark-theme');
+            themeToggle.textContent = '☀️';
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            updateHeader();
+            loadProfile();
+        });
+    </script>
+</body>
+</html>

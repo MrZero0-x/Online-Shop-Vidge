@@ -1,0 +1,1943 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vedgi - Админ-панель</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="database.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        /* Стили для админки */
+        .admin-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .login-container {
+            max-width: 400px;
+            margin: 100px auto;
+            padding: 40px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .login-container h2 {
+            margin-bottom: 30px;
+            color: var(--accent-color);
+        }
+
+        .login-container input {
+            width: 100%;
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            background: var(--bg-color);
+            color: var(--text-color);
+            font-size: 16px;
+        }
+
+        .login-container button {
+            width: 100%;
+            padding: 15px;
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .login-container button:hover {
+            opacity: 0.9;
+        }
+
+        .error-message {
+            color: #dc3545;
+            margin-top: 10px;
+        }
+
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .admin-header h1 {
+            font-family: 'Cinzel', serif;
+            color: var(--accent-color);
+        }
+
+        .admin-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            background: var(--header-bg);
+            padding: 5px;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            flex-wrap: wrap;
+        }
+
+        .admin-tab {
+            padding: 12px 25px;
+            background: transparent;
+            border: none;
+            color: var(--text-color);
+            cursor: pointer;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .admin-tab:hover {
+            background: var(--border-color);
+        }
+
+        .admin-tab.active {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            opacity: 0.9;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            opacity: 0.9;
+        }
+
+        .btn-edit, .btn-delete, .btn-view {
+            padding: 5px 10px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            margin: 0 2px;
+        }
+
+        .btn-edit {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        .btn-delete {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-view {
+            background: #17a2b8;
+            color: white;
+        }
+
+        .product-form {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 30px;
+            margin-bottom: 30px;
+            display: none;
+        }
+
+        .product-form h2 {
+            margin-bottom: 20px;
+            color: var(--accent-color);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            background: var(--bg-color);
+            color: var(--text-color);
+            font-size: 16px;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: 2px solid var(--accent-color);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .btn-save {
+            background: #28a745;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .btn-cancel {
+            background: #6c757d;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 20px;
+        }
+
+        .table th {
+            background: var(--accent-color);
+            color: white;
+            padding: 15px;
+            text-align: left;
+        }
+
+        .table td {
+            padding: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .table tr:hover {
+            background: var(--header-bg);
+        }
+
+        .product-img {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 5px;
+        }
+
+        .stock-control {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .stock-control button {
+            width: 30px;
+            height: 30px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .stock-control .minus {
+            background: #ffc107;
+            color: black;
+        }
+
+        .stock-control .plus {
+            background: #28a745;
+            color: white;
+        }
+
+        .stock-control span {
+            min-width: 30px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .stock-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .stock-high {
+            background: #28a745;
+            color: white;
+        }
+
+        .stock-medium {
+            background: #ffc107;
+            color: black;
+        }
+
+        .stock-low {
+            background: #dc3545;
+            color: white;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-new {
+            background: #ffc107;
+            color: #000;
+        }
+
+        .status-processing {
+            background: #17a2b8;
+            color: white;
+        }
+
+        .status-delivered {
+            background: #28a745;
+            color: white;
+        }
+
+        .status-cancelled {
+            background: #dc3545;
+            color: white;
+        }
+
+        .status-answered {
+            background: #28a745;
+            color: white;
+        }
+
+        .status-active {
+            background: #28a745;
+            color: white;
+        }
+
+        .status-expired {
+            background: #dc3545;
+            color: white;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--accent-color);
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+
+        .logout-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .filter-select {
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            background: var(--bg-color);
+            color: var(--text-color);
+            margin-right: 10px;
+        }
+
+        .messages-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .message-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .message-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border-color: var(--accent-color);
+        }
+
+        .message-card.new {
+            border-left: 5px solid #ffc107;
+        }
+
+        .message-card.answered {
+            border-left: 5px solid #28a745;
+        }
+
+        .message-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .message-date {
+            font-size: 12px;
+            opacity: 0.7;
+        }
+
+        .message-sender {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .message-subject {
+            font-size: 14px;
+            color: var(--accent-color);
+            margin-bottom: 10px;
+        }
+
+        .message-preview {
+            font-size: 14px;
+            opacity: 0.8;
+            margin-bottom: 15px;
+            max-height: 60px;
+            overflow: hidden;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            max-width: 500px;
+            width: 90%;
+            background: var(--card-bg);
+            border-radius: 10px;
+            padding: 30px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .modal-header h2 {
+            color: var(--accent-color);
+        }
+
+        .close-modal {
+            font-size: 30px;
+            cursor: pointer;
+        }
+
+        .search-box {
+            margin-bottom: 20px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            background: var(--bg-color);
+            color: var(--text-color);
+            font-size: 16px;
+        }
+
+        .role-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .role-admin {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .role-manager {
+            background: #17a2b8;
+            color: white;
+        }
+        
+        .role-user {
+            background: #6c757d;
+            color: white;
+        }
+
+        /* Стили для хитов продаж */
+        .hits-showcase {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+
+        .hits-grid-admin {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .hit-card-admin {
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 15px;
+            position: relative;
+            transition: transform 0.3s;
+        }
+
+        .hit-card-admin:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .hit-rank {
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            width: 30px;
+            height: 30px;
+            background: var(--accent-color);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 16px;
+        }
+
+        .hit-image-admin {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+
+        .hit-title-admin {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .hit-sold-admin {
+            color: #28a745;
+            font-weight: 700;
+            font-size: 18px;
+            margin: 10px 0;
+        }
+
+        .hit-progress {
+            height: 5px;
+            background: var(--border-color);
+            border-radius: 5px;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+
+        .hit-progress-bar {
+            height: 100%;
+            background: var(--accent-color);
+            border-radius: 5px;
+            transition: width 0.3s;
+        }
+
+        .hit-actions-admin {
+            display: flex;
+            gap: 5px;
+            margin-top: 10px;
+        }
+
+        .hit-btn-small {
+            flex: 1;
+            padding: 5px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .hit-btn-promote {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        .hit-btn-reset {
+            background: #ffc107;
+            color: black;
+        }
+
+        /* Исправленное выпадающее меню */
+        .user-menu {
+            position: relative;
+            cursor: pointer;
+        }
+
+        .user-name {
+            padding: 8px 20px;
+            background: var(--accent-color);
+            color: white;
+            border-radius: 5px;
+            display: inline-block;
+            cursor: pointer;
+        }
+
+        .user-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            width: 220px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin-top: 5px;
+            display: none;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            z-index: 1000;
+        }
+
+        .user-dropdown.show {
+            display: block;
+        }
+
+        .user-dropdown a {
+            display: block;
+            padding: 12px 20px;
+            color: var(--text-color);
+            text-decoration: none;
+            border-bottom: 1px solid var(--border-color);
+            transition: background 0.3s;
+        }
+
+        .user-dropdown a:last-child {
+            border-bottom: none;
+        }
+
+        .user-dropdown a:hover {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            .admin-tabs {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    
+    <header class="header">
+        <div class="container header-container">
+            <div class="logo">
+                <a href="index.html">Vedgi</a>
+            </div>
+            <nav class="nav">
+                <ul class="nav-list">
+                    <li><a href="index.html">Главная</a></li>
+                    <li><a href="catalog.html">Каталог</a></li>
+                    <li><a href="cart.html">Корзина 🛒</a></li>
+                    <li><a href="profile.html">Профиль</a></li>
+                    <li><a href="about.html">О бренде</a></li>
+                    <li><a href="contacts.html">Контакты</a></li>
+                </ul>
+            </nav>
+            <div class="auth-buttons" id="authButtons"></div>
+            <button id="theme-toggle" class="theme-toggle">🌙</button>
+        </div>
+    </header>
+
+    <main id="main-content">
+        <!-- Контент будет загружаться через JS -->
+    </main>
+
+    <!-- Модальное окно для сообщений -->
+    <div id="messageModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Просмотр сообщения</h2>
+                <span class="close-modal" onclick="closeMessageModal()">&times;</span>
+            </div>
+            <div id="messageDetails"></div>
+            <textarea id="messageAnswer" rows="4" style="width: 100%; padding: 10px; margin: 15px 0; border: 1px solid var(--border-color); border-radius: 5px;" placeholder="Введите ответ..."></textarea>
+            <div style="display: flex; gap: 10px;">
+                <button class="btn btn-success" onclick="sendMessageAnswer()">Отправить ответ</button>
+                <button class="btn btn-cancel" onclick="closeMessageModal()">Закрыть</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно для промокодов -->
+    <div id="promocodeModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="promocodeModalTitle">Добавление промокода</h2>
+                <span class="close-modal" onclick="closePromocodeModal()">&times;</span>
+            </div>
+            <form id="promocodeForm" onsubmit="savePromocode(event)">
+                <input type="hidden" id="promocodeId">
+                
+                <div class="form-group">
+                    <label>Код промокода *</label>
+                    <input type="text" id="promocodeCode" placeholder="SUMMER20" required>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Тип скидки *</label>
+                        <select id="promocodeType" required>
+                            <option value="percent">Процент</option>
+                            <option value="fixed">Фиксированная сумма</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Скидка *</label>
+                        <input type="number" id="promocodeDiscount" min="1" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Минимальная сумма заказа</label>
+                    <input type="number" id="promocodeMinSum" value="0">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Дата начала</label>
+                        <input type="date" id="promocodeStartDate">
+                    </div>
+                    <div class="form-group">
+                        <label>Дата окончания</label>
+                        <input type="date" id="promocodeEndDate">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Максимальное количество использований</label>
+                    <input type="number" id="promocodeMaxUses" value="100">
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn-save">Сохранить</button>
+                    <button type="button" class="btn-cancel" onclick="closePromocodeModal()">Отмена</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2026 Vedgi. Все права защищены Traider INC Corporation.</p>
+        </div>
+    </footer>
+
+    <script>
+        // ============= ПРОВЕРКА АВТОРИЗАЦИИ =============
+        let currentUser = null;
+
+        function checkAuth() {
+            const currentUserData = localStorage.getItem('current_user');
+            
+            if (currentUserData) {
+                currentUser = JSON.parse(currentUserData);
+                if (currentUser.role === 'admin' || currentUser.role === 'manager') {
+                    showAdminPanel();
+                } else {
+                    showPermissionDenied();
+                }
+            } else {
+                showLoginForm();
+            }
+        }
+
+        function showPermissionDenied() {
+            document.getElementById('main-content').innerHTML = `
+                <div style="text-align: center; padding: 100px 20px; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 10px; margin: 50px auto; max-width: 500px;">
+                    <span style="font-size: 80px; display: block; margin-bottom: 20px;">🚫</span>
+                    <h2>Доступ запрещен</h2>
+                    <p>У вас нет прав для доступа к админ-панели.</p>
+                    <a href="index.html" class="btn" style="margin-top: 20px; display: inline-block;">Вернуться на главную</a>
+                </div>
+            `;
+        }
+
+        function showLoginForm() {
+            document.getElementById('main-content').innerHTML = `
+                <div class="login-container">
+                    <h2>Вход в админ-панель</h2>
+                    <input type="password" id="password" placeholder="Введите пароль">
+                    <button onclick="login()">Войти</button>
+                    <div id="loginError" class="error-message"></div>
+                </div>
+            `;
+        }
+
+        function login() {
+            const password = document.getElementById('password').value;
+            const users = db.getAllUsers();
+            const admin = users.find(u => u.role === 'admin' && u.password === password);
+            
+            if (admin) {
+                localStorage.setItem('current_user', JSON.stringify(admin));
+                currentUser = admin;
+                showAdminPanel();
+            } else {
+                document.getElementById('loginError').textContent = 'Неверный пароль!';
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('current_user');
+            window.location.href = 'index.html';
+        }
+
+        function hasPermission(action) {
+            if (!currentUser) return false;
+            
+            const permissions = {
+                'admin': {
+                    'manage_users': true,
+                    'manage_products': true,
+                    'manage_orders': true,
+                    'manage_messages': true,
+                    'manage_promocodes': true,
+                    'view_reports': true,
+                    'change_role': true
+                },
+                'manager': {
+                    'manage_users': false,
+                    'manage_products': true,
+                    'manage_orders': true,
+                    'manage_messages': true,
+                    'manage_promocodes': false,
+                    'view_reports': true,
+                    'change_role': false
+                }
+            };
+            
+            return permissions[currentUser.role]?.[action] || false;
+        }
+
+        // ============= БАЗА ДАННЫХ =============
+        class Database {
+            constructor() {
+                this.PRODUCTS_KEY = 'vedgi_products';
+                this.MESSAGES_KEY = 'vedgi_messages';
+                this.PROMOCODES_KEY = 'vedgi_promocodes';
+                this.USERS_KEY = 'vedgi_users';
+                this.init();
+            }
+
+            init() {
+                if (!localStorage.getItem(this.PRODUCTS_KEY)) {
+                    const defaultProducts = [
+                        {
+                            id: this.generateId(),
+                            name: 'Черный Император',
+                            category: 'male',
+                            price: 18500,
+                            quantity: 15,
+                            sold: 0,
+                            image: 'https://images.unsplash.com/photo-1594035910387-fea47794261f?w=300',
+                            description: 'Древесно-пряный аромат с нотами черного перца, кедра и кожи.',
+                            type: 'Древесный',
+                            inStock: true
+                        },
+                        {
+                            id: this.generateId(),
+                            name: 'Королевская ночь',
+                            category: 'female',
+                            price: 22000,
+                            quantity: 8,
+                            sold: 0,
+                            image: 'https://images.unsplash.com/photo-1541643600914-78b084683601?w=300',
+                            description: 'Восточно-цветочный аромат с розой, жасмином и удам.',
+                            type: 'Цветочный',
+                            inStock: true
+                        },
+                        {
+                            id: this.generateId(),
+                            name: 'Белый ворон',
+                            category: 'unisex',
+                            price: 26000,
+                            quantity: 5,
+                            sold: 0,
+                            image: 'https://images.unsplash.com/photo-1615634260162-2032185b1de8?w=300',
+                            description: 'Альдегидный аромат с ирисом, мускусом и дубовым мхом.',
+                            type: 'Альдегидный',
+                            inStock: true
+                        },
+                        {
+                            id: this.generateId(),
+                            name: 'Стальной характер',
+                            category: 'male',
+                            price: 21000,
+                            quantity: 12,
+                            sold: 0,
+                            image: 'https://images.unsplash.com/photo-1619994403073-2cd6a8f46b7b?w=300',
+                            description: 'Холодный, уверенный аромат с бергамотом, ветивером и амброй.',
+                            type: 'Цитрусовый',
+                            inStock: true
+                        },
+                        {
+                            id: this.generateId(),
+                            name: 'Алмазная королева',
+                            category: 'female',
+                            price: 24500,
+                            quantity: 7,
+                            sold: 0,
+                            image: 'https://images.unsplash.com/photo-1523293182086-7651a899d37f?w=300',
+                            description: 'Изысканный аромат с ирисом, ванилью и белым мускусом.',
+                            type: 'Пудровый',
+                            inStock: true
+                        },
+                        {
+                            id: this.generateId(),
+                            name: 'Теневой совет',
+                            category: 'unisex',
+                            price: 28000,
+                            quantity: 3,
+                            sold: 0,
+                            image: 'https://images.unsplash.com/photo-1587017539504-67cfbddac569?w=300',
+                            description: 'Мистический аромат с ладаном, табаком и удом.',
+                            type: 'Дымный',
+                            inStock: true
+                        }
+                    ];
+                    localStorage.setItem(this.PRODUCTS_KEY, JSON.stringify(defaultProducts));
+                }
+
+                if (!localStorage.getItem(this.MESSAGES_KEY)) {
+                    localStorage.setItem(this.MESSAGES_KEY, JSON.stringify([]));
+                }
+
+                if (!localStorage.getItem(this.PROMOCODES_KEY)) {
+                    const defaultPromocodes = [
+                        {
+                            id: this.generateId(),
+                            code: 'WELCOME20',
+                            type: 'percent',
+                            discount: 20,
+                            minSum: 5000,
+                            startDate: null,
+                            endDate: null,
+                            maxUses: 100,
+                            uses: 0
+                        },
+                        {
+                            id: this.generateId(),
+                            code: 'VIP500',
+                            type: 'fixed',
+                            discount: 500,
+                            minSum: 10000,
+                            startDate: null,
+                            endDate: null,
+                            maxUses: 50,
+                            uses: 0
+                        }
+                    ];
+                    localStorage.setItem(this.PROMOCODES_KEY, JSON.stringify(defaultPromocodes));
+                }
+
+                if (!localStorage.getItem(this.USERS_KEY)) {
+                    const defaultUsers = [
+                        {
+                            id: '1',
+                            name: 'Администратор',
+                            email: 'admin@vedgi.ru',
+                            password: 'admin123',
+                            role: 'admin',
+                            phone: '+7 (999) 123-45-67',
+                            registered: new Date().toLocaleString()
+                        },
+                        {
+                            id: '2',
+                            name: 'Иван Петров',
+                            email: 'ivan@mail.ru',
+                            password: 'user123',
+                            role: 'user',
+                            phone: '+7 (999) 765-43-21',
+                            registered: new Date().toLocaleString()
+                        },
+                        {
+                            id: '3',
+                            name: 'Мария Менеджер',
+                            email: 'maria@vedgi.ru',
+                            password: 'manager123',
+                            role: 'manager',
+                            phone: '+7 (999) 555-66-77',
+                            registered: new Date().toLocaleString()
+                        }
+                    ];
+                    localStorage.setItem(this.USERS_KEY, JSON.stringify(defaultUsers));
+                }
+            }
+
+            generateId() {
+                return Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+            }
+
+            getUsers() {
+                return JSON.parse(localStorage.getItem(this.USERS_KEY)) || [];
+            }
+
+            getAllUsers() {
+                const users = this.getUsers();
+                return users.map(u => {
+                    const { password, ...userWithoutPass } = u;
+                    return userWithoutPass;
+                });
+            }
+
+            updateUserRole(userId, newRole) {
+                const users = this.getUsers();
+                const index = users.findIndex(u => u.id === userId);
+                if (index !== -1) {
+                    users[index].role = newRole;
+                    localStorage.setItem(this.USERS_KEY, JSON.stringify(users));
+                    return { success: true };
+                }
+                return { success: false };
+            }
+
+            deleteUser(userId) {
+                const users = this.getUsers();
+                const filtered = users.filter(u => u.id !== userId);
+                localStorage.setItem(this.USERS_KEY, JSON.stringify(filtered));
+                return { success: true };
+            }
+
+            getUserStats() {
+                const users = this.getUsers();
+                return {
+                    total: users.length,
+                    admins: users.filter(u => u.role === 'admin').length,
+                    managers: users.filter(u => u.role === 'manager').length,
+                    users: users.filter(u => u.role === 'user').length
+                };
+            }
+
+            getProducts() {
+                const products = JSON.parse(localStorage.getItem(this.PRODUCTS_KEY)) || [];
+                return products.map(p => {
+                    if (p.sold === undefined) p.sold = 0;
+                    return p;
+                });
+            }
+
+            getProductById(id) {
+                const product = this.getProducts().find(p => p.id === id);
+                if (product && product.sold === undefined) product.sold = 0;
+                return product;
+            }
+
+            addProduct(product) {
+                const products = this.getProducts();
+                product.id = this.generateId();
+                if (product.quantity === undefined) product.quantity = 0;
+                product.sold = 0;
+                product.inStock = product.quantity > 0;
+                products.push(product);
+                localStorage.setItem(this.PRODUCTS_KEY, JSON.stringify(products));
+                return product;
+            }
+
+            updateProduct(id, updatedProduct) {
+                const products = this.getProducts();
+                const index = products.findIndex(p => p.id === id);
+                if (index !== -1) {
+                    const oldSold = products[index].sold || 0;
+                    updatedProduct.inStock = updatedProduct.quantity > 0;
+                    if (updatedProduct.sold === undefined) {
+                        updatedProduct.sold = oldSold;
+                    }
+                    products[index] = { ...products[index], ...updatedProduct };
+                    localStorage.setItem(this.PRODUCTS_KEY, JSON.stringify(products));
+                    return products[index];
+                }
+                return null;
+            }
+
+            deleteProduct(id) {
+                const products = this.getProducts();
+                const filtered = products.filter(p => p.id !== id);
+                localStorage.setItem(this.PRODUCTS_KEY, JSON.stringify(filtered));
+            }
+
+            getProductStats() {
+                const products = this.getProducts();
+                const total = products.length;
+                const totalQuantity = products.reduce((sum, p) => sum + (p.quantity || 0), 0);
+                const totalSold = products.reduce((sum, p) => sum + (p.sold || 0), 0);
+                const maleCount = products.filter(p => p.category === 'male').length;
+                const femaleCount = products.filter(p => p.category === 'female').length;
+                const unisexCount = products.filter(p => p.category === 'unisex').length;
+                const avgPrice = total > 0 ? Math.round(products.reduce((sum, p) => sum + p.price, 0) / total) : 0;
+
+                return { total, totalQuantity, totalSold, maleCount, femaleCount, unisexCount, avgPrice };
+            }
+
+            getOrders() {
+                return JSON.parse(localStorage.getItem('vedgi_orders')) || [];
+            }
+
+            updateOrderStatus(orderId, newStatus) {
+                const orders = this.getOrders();
+                const index = orders.findIndex(o => o.id === orderId);
+                if (index !== -1) {
+                    orders[index].status = newStatus;
+                    localStorage.setItem('vedgi_orders', JSON.stringify(orders));
+                }
+            }
+
+            getOrdersStats() {
+                const orders = this.getOrders();
+                return {
+                    total: orders.length,
+                    new: orders.filter(o => o.status === 'new').length,
+                    processing: orders.filter(o => o.status === 'processing').length,
+                    delivered: orders.filter(o => o.status === 'delivered').length,
+                    cancelled: orders.filter(o => o.status === 'cancelled').length,
+                    revenue: orders.reduce((sum, o) => sum + o.total, 0)
+                };
+            }
+
+            getMessages() {
+                return JSON.parse(localStorage.getItem(this.MESSAGES_KEY)) || [];
+            }
+
+            getMessageById(id) {
+                return this.getMessages().find(m => m.id === id);
+            }
+
+            updateMessage(id, updatedMessage) {
+                const messages = this.getMessages();
+                const index = messages.findIndex(m => m.id === id);
+                if (index !== -1) {
+                    messages[index] = { ...messages[index], ...updatedMessage };
+                    localStorage.setItem(this.MESSAGES_KEY, JSON.stringify(messages));
+                    return messages[index];
+                }
+                return null;
+            }
+
+            getMessageStats() {
+                const messages = this.getMessages();
+                return {
+                    total: messages.length,
+                    new: messages.filter(m => m.status === 'new').length,
+                    answered: messages.filter(m => m.status === 'answered').length
+                };
+            }
+
+            getPromocodes() {
+                return JSON.parse(localStorage.getItem(this.PROMOCODES_KEY)) || [];
+            }
+
+            getPromocodeById(id) {
+                return this.getPromocodes().find(p => p.id === id);
+            }
+
+            addPromocode(promocode) {
+                const promocodes = this.getPromocodes();
+                promocode.id = this.generateId();
+                promocode.uses = 0;
+                promocodes.push(promocode);
+                localStorage.setItem(this.PROMOCODES_KEY, JSON.stringify(promocodes));
+                return promocode;
+            }
+
+            updatePromocode(id, updatedPromocode) {
+                const promocodes = this.getPromocodes();
+                const index = promocodes.findIndex(p => p.id === id);
+                if (index !== -1) {
+                    promocodes[index] = { ...promocodes[index], ...updatedPromocode };
+                    localStorage.setItem(this.PROMOCODES_KEY, JSON.stringify(promocodes));
+                    return promocodes[index];
+                }
+                return null;
+            }
+
+            deletePromocode(id) {
+                const promocodes = this.getPromocodes();
+                const filtered = promocodes.filter(p => p.id !== id);
+                localStorage.setItem(this.PROMOCODES_KEY, JSON.stringify(filtered));
+            }
+
+            getPromocodeStats() {
+                const promocodes = this.getPromocodes();
+                const active = promocodes.filter(p => {
+                    const now = new Date();
+                    const start = p.startDate ? new Date(p.startDate) : null;
+                    const end = p.endDate ? new Date(p.endDate) : null;
+                    return (!start || start <= now) && (!end || end >= now) && (p.uses < p.maxUses);
+                }).length;
+                return { total: promocodes.length, active };
+            }
+        }
+
+        const db = new Database();
+
+        // ============= АДМИН-ПАНЕЛЬ =============
+        function showAdminPanel() {
+            const tabs = [];
+            
+            if (hasPermission('manage_products')) {
+                tabs.push('<button class="admin-tab" onclick="switchTab(\'products\')">📦 Товары</button>');
+            }
+            if (hasPermission('manage_orders')) {
+                tabs.push('<button class="admin-tab" onclick="switchTab(\'orders\')">📋 Заказы</button>');
+            }
+            if (hasPermission('manage_users')) {
+                tabs.push('<button class="admin-tab" onclick="switchTab(\'users\')">👥 Пользователи</button>');
+            }
+            tabs.push('<button class="admin-tab" onclick="switchTab(\'hits\')">🔥 Хиты продаж</button>');
+            if (hasPermission('manage_messages')) {
+                tabs.push('<button class="admin-tab" onclick="switchTab(\'messages\')">📬 Сообщения</button>');
+            }
+            if (hasPermission('manage_promocodes')) {
+                tabs.push('<button class="admin-tab" onclick="switchTab(\'promocodes\')">🏷️ Промокоды</button>');
+            }
+
+            document.getElementById('main-content').innerHTML = `
+                <div class="admin-container">
+                    <div class="admin-header">
+                        <h1>Панель управления Vedgi</h1>
+                        <div>
+                            <span style="margin-right: 15px; color: var(--accent-color);">
+                                ${currentUser.role === 'admin' ? '👑 Администратор' : '👔 Менеджер'}
+                            </span>
+                            <button class="logout-btn" onclick="logout()">Выйти</button>
+                        </div>
+                    </div>
+
+                    <div class="admin-tabs">
+                        ${tabs.join('')}
+                    </div>
+
+                    <!-- Вкладка Товары -->
+                    ${hasPermission('manage_products') ? `
+                    <div id="productsTab" class="tab-content">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                            <h2>Управление товарами</h2>
+                            <button class="btn btn-primary" onclick="showAddForm()">+ Добавить товар</button>
+                        </div>
+                        <div class="stats-grid" id="productStats"></div>
+                        <div id="productForm" class="product-form">
+                            <h2 id="formTitle">Добавление товара</h2>
+                            <form id="productEditForm" onsubmit="saveProduct(event)">
+                                <input type="hidden" id="productId">
+                                <div class="form-group"><label>Название товара *</label><input type="text" id="productName" required></div>
+                                <div class="form-row">
+                                    <div class="form-group"><label>Категория *</label><select id="productCategory" required><option value="">Выберите</option><option value="male">Мужские</option><option value="female">Женские</option><option value="unisex">Унисекс</option></select></div>
+                                    <div class="form-group"><label>Цена (₽) *</label><input type="number" id="productPrice" required></div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group"><label>Количество на складе *</label><input type="number" id="productQuantity" value="0" min="0" required></div>
+                                    <div class="form-group"><label>Тип аромата</label><input type="text" id="productType"></div>
+                                </div>
+                                <div class="form-group"><label>URL изображения</label><input type="text" id="productImage" placeholder="https://..."></div>
+                                <div class="form-group"><label>Описание</label><textarea id="productDescription" rows="3"></textarea></div>
+                                <div class="form-actions"><button type="submit" class="btn-save">Сохранить</button><button type="button" class="btn-cancel" onclick="hideForm()">Отмена</button></div>
+                            </form>
+                        </div>
+                        <table class="table"><thead><tr><th>Фото</th><th>Название</th><th>Категория</th><th>Цена</th><th>Тип</th><th>В наличии</th><th>Кол-во</th><th>Продано</th><th>Действия</th></tr></thead><tbody id="productsTableBody"></tbody></table>
+                    </div>
+                    ` : ''}
+
+                    <!-- Вкладка Заказы -->
+                    ${hasPermission('manage_orders') ? `
+                    <div id="ordersTab" class="tab-content">
+                        <h2>Управление заказами</h2>
+                        <div class="stats-grid" id="orderStats"></div>
+                        <div style="margin-bottom: 20px; display: flex; gap: 10px;">
+                            <select id="orderFilter" class="filter-select" onchange="filterOrders()"><option value="all">Все заказы</option><option value="new">Новые</option><option value="processing">В обработке</option><option value="delivered">Доставленные</option><option value="cancelled">Отмененные</option></select>
+                            <input type="text" id="orderSearch" class="filter-select" placeholder="🔍 Поиск по номеру или покупателю" style="flex: 1;" oninput="searchOrders()">
+                        </div>
+                        <table class="table"><thead><tr><th>№ заказа</th><th>Дата</th><th>Покупатель</th><th>Товары</th><th>Сумма</th><th>Статус</th><th>Оплата</th><th>Адрес</th></tr></thead><tbody id="ordersBody"></tbody></table>
+                    </div>
+                    ` : ''}
+
+                    <!-- Вкладка Пользователи -->
+                    ${hasPermission('manage_users') ? `
+                    <div id="usersTab" class="tab-content">
+                        <h2>Управление пользователями</h2>
+                        <div class="stats-grid" id="userStats"></div>
+                        <div style="margin-bottom: 20px;"><input type="text" id="userSearch" class="filter-select" placeholder="🔍 Поиск по имени или email..." style="width: 100%;" oninput="searchUsers()"></div>
+                        <table class="table"><thead><tr><th>ID</th><th>Имя</th><th>Email</th><th>Телефон</th><th>Роль</th><th>Дата регистрации</th><th>Действия</th></tr></thead><tbody id="usersTableBody"></tbody></table>
+                    </div>
+                    ` : ''}
+
+                    <!-- Вкладка Хиты продаж (без лишней статистики) -->
+                    <div id="hitsTab" class="tab-content">
+                        <h2>🔥 Управление хитами продаж</h2>
+                        
+                        <div style="margin-bottom: 20px; display: flex; gap: 10px; align-items: center;">
+                            <select id="hitPeriod" class="filter-select" onchange="loadHits()">
+                                <option value="all">За всё время</option>
+                                <option value="week">За неделю</option>
+                                <option value="month">За месяц</option>
+                            </select>
+                            <button class="btn btn-primary" onclick="resetHitCounters()">🔄 Сбросить все счетчики</button>
+                        </div>
+
+                        <div class="hits-showcase">
+                            <h3>🏆 Топ продаж</h3>
+                            <div class="hits-grid-admin" id="hitsGridAdmin"></div>
+                        </div>
+
+                        <div style="margin-top: 40px;">
+                            <h3>📊 Статистика по всем товарам</h3>
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Фото</th>
+                                        <th>Название</th>
+                                        <th>Категория</th>
+                                        <th>Цена</th>
+                                        <th>Продано (всего)</th>
+                                        <th>Продано (неделя)</th>
+                                        <th>Продано (месяц)</th>
+                                        <th>Остаток</th>
+                                        <th>Выручка</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="hitsTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Вкладка Сообщения -->
+                    ${hasPermission('manage_messages') ? `
+                    <div id="messagesTab" class="tab-content">
+                        <h2>Управление сообщениями</h2>
+                        <div class="stats-grid" id="messageStats"></div>
+                        <div class="search-box"><input type="text" id="messageSearch" placeholder="🔍 Поиск по имени или email..." oninput="searchMessages()"></div>
+                        <div class="messages-grid" id="messagesGrid"></div>
+                    </div>
+                    ` : ''}
+
+                    <!-- Вкладка Промокоды -->
+                    ${hasPermission('manage_promocodes') ? `
+                    <div id="promocodesTab" class="tab-content">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                            <h2>Управление промокодами</h2>
+                            <button class="btn btn-primary" onclick="showAddPromocodeForm()">+ Добавить промокод</button>
+                        </div>
+                        <div class="stats-grid" id="promocodeStats"></div>
+                        <table class="table"><thead><tr><th>Код</th><th>Скидка</th><th>Тип</th><th>Мин. сумма</th><th>Срок действия</th><th>Использовано</th><th>Статус</th><th>Действия</th></tr></thead><tbody id="promocodesBody"></tbody></table>
+                    </div>
+                    ` : ''}
+                </div>
+            `;
+
+            const firstTab = document.querySelector('.admin-tab');
+            if (firstTab) {
+                firstTab.classList.add('active');
+                const tabText = firstTab.textContent;
+                let tabId = 'products';
+                if (tabText.includes('Товары')) tabId = 'products';
+                else if (tabText.includes('Заказы')) tabId = 'orders';
+                else if (tabText.includes('Пользователи')) tabId = 'users';
+                else if (tabText.includes('Хиты')) tabId = 'hits';
+                else if (tabText.includes('Сообщения')) tabId = 'messages';
+                else if (tabText.includes('Промокоды')) tabId = 'promocodes';
+                document.getElementById(tabId + 'Tab').classList.add('active');
+            }
+
+            if (hasPermission('manage_products')) {
+                loadProducts();
+                loadProductStats();
+            }
+            if (hasPermission('manage_orders')) {
+                loadOrders();
+            }
+            if (hasPermission('manage_users')) {
+                loadUsers();
+            }
+            loadHits();
+            if (hasPermission('manage_messages')) {
+                loadMessages();
+            }
+            if (hasPermission('manage_promocodes')) {
+                loadPromocodes();
+            }
+        }
+
+        function switchTab(tab) {
+            document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            event.target.classList.add('active');
+            document.getElementById(tab + 'Tab').classList.add('active');
+            
+            if (tab === 'products' && hasPermission('manage_products')) {
+                loadProducts();
+                loadProductStats();
+            }
+            if (tab === 'orders' && hasPermission('manage_orders')) {
+                loadOrders();
+            }
+            if (tab === 'users' && hasPermission('manage_users')) {
+                loadUsers();
+            }
+            if (tab === 'hits') {
+                loadHits();
+            }
+            if (tab === 'messages' && hasPermission('manage_messages')) {
+                loadMessages();
+            }
+            if (tab === 'promocodes' && hasPermission('manage_promocodes')) {
+                loadPromocodes();
+            }
+        }
+
+        // ============= ТОВАРЫ =============
+        function loadProducts() {
+            const products = db.getProducts();
+            const tbody = document.getElementById('productsTableBody');
+            if (!tbody) return;
+            
+            if (products.length === 0) {
+                tbody.innerHTML = 'tr><td colspan="9" style="text-align: center;">Товаров нет</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = products.map(product => {
+                let stockClass = '';
+                if (product.quantity > 10) stockClass = 'stock-high';
+                else if (product.quantity > 0) stockClass = 'stock-medium';
+                else stockClass = 'stock-low';
+                const stockText = product.quantity > 0 ? product.quantity : 'Нет';
+                
+                return `
+                    <tr>
+                        <td><img src="${product.image || 'https://via.placeholder.com/60'}" class="product-img" onerror="this.src='https://via.placeholder.com/60'"></td>
+                        <td>${product.name}</td>
+                        <td>${getCategoryName(product.category)}</td>
+                        <td>${product.price.toLocaleString()} ₽</td>
+                        <td>${product.type || '—'}</td>
+                        <td>${product.inStock ? '✅' : '❌'}</td>
+                        <td><div class="stock-control"><button class="minus" onclick="updateStock('${product.id}', -1)">-</button><span class="${stockClass}" style="padding: 2px 8px; border-radius: 12px;">${stockText}</span><button class="plus" onclick="updateStock('${product.id}', 1)">+</button></div></td>
+                        <td>${product.sold || 0} шт.</td>
+                        <td><button class="btn-edit" onclick="editProduct('${product.id}')">✏️</button><button class="btn-delete" onclick="deleteProduct('${product.id}')">🗑️</button></td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function updateStock(productId, change) {
+            const product = db.getProductById(productId);
+            if (!product) return;
+            const newQuantity = (product.quantity || 0) + change;
+            if (newQuantity < 0) { alert('❌ Нельзя уменьшить количество ниже 0'); return; }
+            product.quantity = newQuantity;
+            product.inStock = newQuantity > 0;
+            db.updateProduct(productId, product);
+            loadProducts();
+            loadProductStats();
+        }
+
+        function loadProductStats() {
+            const stats = db.getProductStats();
+            const container = document.getElementById('productStats');
+            if (!container) return;
+            container.innerHTML = `
+                <div class="stat-card"><div class="stat-value">${stats.total}</div><div class="stat-label">Всего товаров</div></div>
+                <div class="stat-card"><div class="stat-value">${stats.totalQuantity}</div><div class="stat-label">На складе</div></div>
+                <div class="stat-card"><div class="stat-value">${stats.totalSold}</div><div class="stat-label">Продано</div></div>
+                <div class="stat-card"><div class="stat-value">${stats.maleCount}</div><div class="stat-label">Мужские</div></div>
+                <div class="stat-card"><div class="stat-value">${stats.femaleCount}</div><div class="stat-label">Женские</div></div>
+                <div class="stat-card"><div class="stat-value">${stats.unisexCount}</div><div class="stat-label">Унисекс</div></div>
+                <div class="stat-card"><div class="stat-value">${stats.avgPrice.toLocaleString()} ₽</div><div class="stat-label">Средняя цена</div></div>
+            `;
+        }
+
+        function getCategoryName(category) {
+            const names = { male: 'Мужские', female: 'Женские', unisex: 'Унисекс' };
+            return names[category] || category;
+        }
+
+        function showAddForm() {
+            document.getElementById('formTitle').textContent = 'Добавление товара';
+            document.getElementById('productId').value = '';
+            document.getElementById('productEditForm').reset();
+            document.getElementById('productQuantity').value = 0;
+            document.getElementById('productForm').style.display = 'block';
+        }
+
+        function hideForm() {
+            document.getElementById('productForm').style.display = 'none';
+        }
+
+        function editProduct(id) {
+            const product = db.getProductById(id);
+            if (!product) return;
+            document.getElementById('formTitle').textContent = 'Редактирование товара';
+            document.getElementById('productId').value = product.id;
+            document.getElementById('productName').value = product.name || '';
+            document.getElementById('productCategory').value = product.category || '';
+            document.getElementById('productPrice').value = product.price || '';
+            document.getElementById('productQuantity').value = product.quantity || 0;
+            document.getElementById('productImage').value = product.image || '';
+            document.getElementById('productDescription').value = product.description || '';
+            document.getElementById('productType').value = product.type || '';
+            document.getElementById('productForm').style.display = 'block';
+        }
+
+        function saveProduct(event) {
+            event.preventDefault();
+            const productId = document.getElementById('productId').value;
+            const quantity = parseInt(document.getElementById('productQuantity').value) || 0;
+            const productData = {
+                name: document.getElementById('productName').value,
+                category: document.getElementById('productCategory').value,
+                price: parseInt(document.getElementById('productPrice').value),
+                quantity: quantity,
+                image: document.getElementById('productImage').value || 'https://via.placeholder.com/300',
+                description: document.getElementById('productDescription').value,
+                type: document.getElementById('productType').value,
+                inStock: quantity > 0
+            };
+            if (productId) {
+                const oldProduct = db.getProductById(productId);
+                productData.sold = oldProduct.sold || 0;
+                db.updateProduct(productId, productData);
+                alert('✅ Товар обновлен! Продажи сохранены: ' + productData.sold + ' шт.');
+            } else {
+                productData.sold = 0;
+                db.addProduct(productData);
+                alert('✅ Товар добавлен!');
+            }
+            hideForm();
+            loadProducts();
+            loadProductStats();
+        }
+
+        function deleteProduct(id) {
+            if (confirm('Удалить товар?')) {
+                db.deleteProduct(id);
+                loadProducts();
+                loadProductStats();
+                alert('🗑️ Товар удален');
+            }
+        }
+
+        // ============= ЗАКАЗЫ =============
+        let currentOrderFilter = 'all';
+        let orderSearchQuery = '';
+
+        function loadOrders() {
+            const orders = db.getOrders();
+            let filtered = orders;
+            if (currentOrderFilter !== 'all') {
+                filtered = orders.filter(o => o.status === currentOrderFilter);
+            }
+            if (orderSearchQuery) {
+                const query = orderSearchQuery.toLowerCase();
+                filtered = filtered.filter(o => o.id.toLowerCase().includes(query) || (o.customerName && o.customerName.toLowerCase().includes(query)));
+            }
+            const stats = db.getOrdersStats();
+            const statsContainer = document.getElementById('orderStats');
+            if (statsContainer) {
+                statsContainer.innerHTML = `
+                    <div class="stat-card"><div class="stat-value">${stats.total}</div><div class="stat-label">Всего заказов</div></div>
+                    <div class="stat-card"><div class="stat-value">${stats.new}</div><div class="stat-label">Новых</div></div>
+                    <div class="stat-card"><div class="stat-value">${stats.revenue.toLocaleString()} ₽</div><div class="stat-label">Выручка</div></div>
+                    <div class="stat-card"><div class="stat-value">${stats.processing}</div><div class="stat-label">В обработке</div></div>
+                    <div class="stat-card"><div class="stat-value">${stats.delivered}</div><div class="stat-label">Доставлено</div></div>
+                `;
+            }
+            const tbody = document.getElementById('ordersBody');
+            if (!tbody) return;
+            if (filtered.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align: center;">Нет заказов</td></tr>';
+                return;
+            }
+            filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
+            tbody.innerHTML = filtered.map(order => {
+                const userName = order.customerName || 'Неизвестно';
+                return `
+                    <tr>
+                        <td><strong>${order.id}</strong></td>
+                        <td>${order.date}</td>
+                        <td>${userName}</td>
+                        <td>${order.items.map(item => `<div>${item.name} (${item.quantity} шт.)</div>`).join('')}</td>
+                        <td>${order.total.toLocaleString()} ₽</td>
+                        <td><select class="status-select" onchange="updateOrderStatus('${order.id}', this.value)"><option value="new" ${order.status === 'new' ? 'selected' : ''}>Новый</option><option value="processing" ${order.status === 'processing' ? 'selected' : ''}>В обработке</option><option value="delivered" ${order.status === 'delivered' ? 'selected' : ''}>Доставлен</option><option value="cancelled" ${order.status === 'cancelled' ? 'selected' : ''}>Отменен</option></select></td>
+                        <td>${order.paymentMethod === 'card' ? '💳 Карта' : '💵 Наличные'}</td>
+                        <td>${order.address}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function filterOrders() { currentOrderFilter = document.getElementById('orderFilter').value; loadOrders(); }
+        function searchOrders() { orderSearchQuery = document.getElementById('orderSearch').value; loadOrders(); }
+        function updateOrderStatus(orderId, newStatus) { db.updateOrderStatus(orderId, newStatus); alert(`✅ Статус заказа ${orderId} изменен`); loadOrders(); }
+
+        // ============= ПОЛЬЗОВАТЕЛИ =============
+        let userSearchQuery = '';
+
+        function loadUsers() {
+            const users = db.getAllUsers();
+            const stats = db.getUserStats();
+            const statsContainer = document.getElementById('userStats');
+            if (statsContainer) {
+                statsContainer.innerHTML = `
+                    <div class="stat-card"><div class="stat-value">${stats.total}</div><div class="stat-label">Всего</div></div>
+                    <div class="stat-card"><div class="stat-value">${stats.admins}</div><div class="stat-label">Админов</div></div>
+                    <div class="stat-card"><div class="stat-value">${stats.managers}</div><div class="stat-label">Менеджеров</div></div>
+                    <div class="stat-card"><div class="stat-value">${stats.users}</div><div class="stat-label">Пользователей</div></div>
+                `;
+            }
+            let filtered = users;
+            if (userSearchQuery) {
+                const query = userSearchQuery.toLowerCase();
+                filtered = users.filter(u => u.name.toLowerCase().includes(query) || u.email.toLowerCase().includes(query));
+            }
+            const tbody = document.getElementById('usersTableBody');
+            if (!tbody) return;
+            if (filtered.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center;">Нет пользователей</td></tr>';
+                return;
+            }
+            tbody.innerHTML = filtered.map(user => {
+                let roleClass = 'role-user', roleText = '👤 Пользователь';
+                if (user.role === 'admin') { roleClass = 'role-admin'; roleText = '👑 Админ'; }
+                else if (user.role === 'manager') { roleClass = 'role-manager'; roleText = '👔 Менеджер'; }
+                const canChangeRole = currentUser.id !== user.id;
+                return `
+                    <tr>
+                        <td><small>${user.id.substring(0, 8)}...</small></td>
+                        <td><strong>${user.name}</strong></td>
+                        <td>${user.email}</td>
+                        <td>${user.phone || '—'}</td>
+                        <td><span class="role-badge ${roleClass}">${roleText}</span></td>
+                        <td>${user.registered || '—'}</td>
+                        <td>${canChangeRole ? `<select class="status-select" onchange="changeUserRole('${user.id}', this.value)"><option value="user" ${user.role === 'user' ? 'selected' : ''}>Пользователь</option><option value="manager" ${user.role === 'manager' ? 'selected' : ''}>Менеджер</option>${currentUser.role === 'admin' ? '<option value="admin" ' + (user.role === 'admin' ? 'selected' : '') + '>Админ</option>' : ''}</select><button class="btn-delete" onclick="deleteUser('${user.id}')" style="margin-left: 5px;">🗑️</button>` : '—'}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function searchUsers() { userSearchQuery = document.getElementById('userSearch').value; loadUsers(); }
+        function changeUserRole(userId, newRole) { if (!confirm(`Изменить роль пользователя?`)) return; const result = db.updateUserRole(userId, newRole); if (result.success) { alert(`✅ Роль пользователя изменена`); loadUsers(); } }
+        function deleteUser(userId) { if (!confirm('Удалить пользователя?')) return; db.deleteUser(userId); alert('🗑️ Пользователь удален'); loadUsers(); }
+
+        // ============= ХИТЫ ПРОДАЖ =============
+        let hitPeriod = 'all';
+
+        function loadHits() {
+            hitPeriod = document.getElementById('hitPeriod')?.value || 'all';
+            const products = db.getProducts();
+            const orders = db.getOrders();
+            const now = Date.now();
+            const weekAgo = now - 7 * 24 * 60 * 60 * 1000;
+            const monthAgo = now - 30 * 24 * 60 * 60 * 1000;
+            
+            const salesData = products.map(product => {
+                let soldWeek = 0, soldMonth = 0;
+                orders.forEach(order => {
+                    const orderTime = new Date(order.date).getTime();
+                    const orderItems = order.items.filter(item => item.productId === product.id);
+                    const quantity = orderItems.reduce((sum, item) => sum + item.quantity, 0);
+                    if (orderTime > weekAgo) soldWeek += quantity;
+                    if (orderTime > monthAgo) soldMonth += quantity;
+                });
+                return { ...product, soldWeek, soldMonth, revenue: (product.sold || 0) * product.price };
+            });
+            
+            let sorted;
+            if (hitPeriod === 'week') sorted = [...salesData].sort((a, b) => b.soldWeek - a.soldWeek);
+            else if (hitPeriod === 'month') sorted = [...salesData].sort((a, b) => b.soldMonth - a.soldMonth);
+            else sorted = [...salesData].sort((a, b) => (b.sold || 0) - (a.sold || 0));
+            
+            const hitsGrid = document.getElementById('hitsGridAdmin');
+            if (hitsGrid) {
+                const topHits = sorted.slice(0, 3);
+                if (topHits.length === 0) {
+                    hitsGrid.innerHTML = '<p>Нет данных о продажах</p>';
+                } else {
+                    const maxSold = Math.max(...topHits.map(p => {
+                        if (hitPeriod === 'week') return p.soldWeek;
+                        if (hitPeriod === 'month') return p.soldMonth;
+                        return p.sold || 0;
+                    }));
+                    hitsGrid.innerHTML = topHits.map((product, index) => {
+                        const soldValue = hitPeriod === 'week' ? product.soldWeek : hitPeriod === 'month' ? product.soldMonth : product.sold || 0;
+                        const progressPercent = maxSold > 0 ? (soldValue / maxSold) * 100 : 0;
+                        return `
+                            <div class="hit-card-admin">
+                                <div class="hit-rank">${index + 1}</div>
+                                <img src="${product.image}" class="hit-image-admin" onerror="this.src='https://via.placeholder.com/150'">
+                                <div class="hit-title-admin">${product.name}</div>
+                                <div class="hit-category">${getCategoryName(product.category)}</div>
+                                <div class="hit-sold-admin">${soldValue} шт.</div>
+                                <div class="hit-progress"><div class="hit-progress-bar" style="width: ${progressPercent}%"></div></div>
+                                <div class="hit-actions-admin">
+                                    <button class="hit-btn-small hit-btn-promote" onclick="promoteProduct('${product.id}')">⭐ Продвигать</button>
+                                    <button class="hit-btn-small hit-btn-reset" onclick="resetProductSold('${product.id}')">🔄 Сброс</button>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                }
+            }
+            
+            const tableBody = document.getElementById('hitsTableBody');
+            if (tableBody) {
+                tableBody.innerHTML = salesData.map(product => {
+                    const soldTotal = product.sold || 0, soldWeek = product.soldWeek || 0, soldMonth = product.soldMonth || 0, revenue = product.revenue || 0;
+                    return `
+                        <tr>
+                            <td><img src="${product.image}" class="product-img" onerror="this.src='https://via.placeholder.com/60'"></td>
+                            <td>${product.name}</td>
+                            <td>${getCategoryName(product.category)}</td>
+                            <td>${product.price.toLocaleString()} ₽</td>
+                            <td><strong style="color: #28a745;">${soldTotal}</strong></td>
+                            <td>${soldWeek}</td>
+                            <td>${soldMonth}</td>
+                            <td>${product.quantity || 0}</td>
+                            <td>${revenue.toLocaleString()} ₽</td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+        }
+
+        function promoteProduct(productId) { const product = db.getProductById(productId); if (product) { alert(`✅ Товар "${product.name}" отмечен как продвигаемый`); } }
+        function resetProductSold(productId) { if (!confirm('Сбросить счетчик продаж для этого товара?')) return; const products = db.getProducts(); const index = products.findIndex(p => p.id === productId); if (index !== -1) { products[index].sold = 0; localStorage.setItem('vedgi_products', JSON.stringify(products)); alert('✅ Счетчик продаж сброшен'); loadHits(); if (hasPermission('manage_products')) { loadProducts(); loadProductStats(); } } }
+        function resetHitCounters() { if (!confirm('Сбросить все счетчики продаж?')) return; const products = db.getProducts(); products.forEach(p => p.sold = 0); localStorage.setItem('vedgi_products', JSON.stringify(products)); alert('✅ Все счетчики продаж сброшены'); loadHits(); if (hasPermission('manage_products')) { loadProducts(); loadProductStats(); } }
+
+        // ============= СООБЩЕНИЯ =============
+        let currentMessageId = null;
+        function loadMessages() {
+            const messages = db.getMessages();
+            const stats = db.getMessageStats();
+            const searchQuery = document.getElementById('messageSearch')?.value.toLowerCase() || '';
+            const statsContainer = document.getElementById('messageStats');
+            if (statsContainer) {
+                statsContainer.innerHTML = `<div class="stat-card"><div class="stat-value">${stats.total}</div><div class="stat-label">Всего</div></div><div class="stat-card"><div class="stat-value">${stats.new}</div><div class="stat-label">Новых</div></div><div class="stat-card"><div class="stat-value">${stats.answered}</div><div class="stat-label">Отвеченных</div></div>`;
+            }
+            let filtered = messages;
+            if (searchQuery) { filtered = messages.filter(m => m.name.toLowerCase().includes(searchQuery) || m.email.toLowerCase().includes(searchQuery)); }
+            filtered.sort((a, b) => { if (a.status === 'new' && b.status !== 'new') return -1; if (a.status !== 'new' && b.status === 'new') return 1; return new Date(b.date) - new Date(a.date); });
+            const grid = document.getElementById('messagesGrid');
+            if (!grid) return;
+            if (filtered.length === 0) { grid.innerHTML = '<p style="text-align: center; padding: 50px;">Нет сообщений</p>'; return; }
+            grid.innerHTML = filtered.map(m => `<div class="message-card ${m.status}" onclick="viewMessage('${m.id}')"><div class="message-header"><span class="status-badge ${m.status === 'new' ? 'status-new' : 'status-answered'}">${m.status === 'new' ? '🆕 Новое' : '✅ Отвечено'}</span><span class="message-date">${m.date}</span></div><div class="message-sender">${m.name}</div><div class="message-subject">${m.subject}</div><div class="message-preview">${m.message.substring(0, 100)}${m.message.length > 100 ? '...' : ''}</div>${m.answer ? '<div style="color: var(--accent-color); font-size: 12px;">✓ Есть ответ</div>' : ''}</div>`).join('');
+        }
+        function searchMessages() { loadMessages(); }
+        function viewMessage(id) {
+            const message = db.getMessageById(id);
+            if (!message) return;
+            currentMessageId = id;
+            document.getElementById('messageDetails').innerHTML = `<p><strong>От:</strong> ${message.name}</p><p><strong>Email:</strong> ${message.email}</p><p><strong>Тема:</strong> ${message.subject}</p><p><strong>Дата:</strong> ${message.date}</p><p><strong>Сообщение:</strong></p><div style="background: var(--header-bg); padding: 15px; border-radius: 5px; margin: 10px 0;">${message.message}</div>${message.answer ? `<p><strong>Ответ:</strong></p><div style="background: var(--header-bg); padding: 15px; border-radius: 5px; margin: 10px 0; border-left: 3px solid var(--accent-color);">${message.answer}<div style="font-size: 12px; margin-top: 10px;">Ответил: ${message.answeredBy} • ${message.answeredDate}</div></div>` : ''}`;
+            document.getElementById('messageAnswer').value = message.answer || '';
+            document.getElementById('messageModal').classList.add('active');
+        }
+        function closeMessageModal() { document.getElementById('messageModal').classList.remove('active'); currentMessageId = null; }
+        function sendMessageAnswer() {
+            const answer = document.getElementById('messageAnswer').value.trim();
+            if (!answer) { alert('Введите ответ'); return; }
+            const message = db.getMessageById(currentMessageId);
+            if (message) {
+                message.status = 'answered';
+                message.answer = answer;
+                message.answeredBy = currentUser.name;
+                message.answeredDate = new Date().toLocaleString();
+                db.updateMessage(currentMessageId, message);
+                alert('✅ Ответ отправлен!');
+                closeMessageModal();
+                loadMessages();
+            }
+        }
+
+        // ============= ПРОМОКОДЫ =============
+        let editingPromocodeId = null;
+        function loadPromocodes() {
+            const promocodes = db.getPromocodes();
+            const stats = db.getPromocodeStats();
+            const tbody = document.getElementById('promocodesBody');
+            const statsContainer = document.getElementById('promocodeStats');
+            if (statsContainer) { statsContainer.innerHTML = `<div class="stat-card"><div class="stat-value">${stats.total}</div><div class="stat-label">Всего</div></div><div class="stat-card"><div class="stat-value">${stats.active}</div><div class="stat-label">Активных</div></div>`; }
+            if (!tbody) return;
+            tbody.innerHTML = promocodes.map(p => {
+                const now = new Date();
+                const start = p.startDate ? new Date(p.startDate) : null;
+                const end = p.endDate ? new Date(p.endDate) : null;
+                let status = 'active', statusClass = 'status-active';
+                if ((start && start > now) || (end && end < now) || p.uses >= p.maxUses) { status = 'expired'; statusClass = 'status-expired'; }
+                const dateRange = p.startDate || p.endDate ? `${p.startDate || '—'} - ${p.endDate || '—'}` : '—';
+                return `<tr><td><strong>${p.code}</strong></td><td>${p.discount}${p.type === 'percent' ? '%' : ' ₽'}</td><td>${p.type === 'percent' ? 'Процент' : 'Фикс'}</td><td>${p.minSum.toLocaleString()} ₽</td><td>${dateRange}</td><td>${p.uses || 0}/${p.maxUses}</td><td><span class="status-badge ${statusClass}">${status === 'active' ? 'Активен' : 'Неактивен'}</span></td><td><button class="btn-edit" onclick="editPromocode('${p.id}')">✏️</button><button class="btn-delete" onclick="deletePromocode('${p.id}')">🗑️</button></td></tr>`;
+            }).join('');
+        }
+        function showAddPromocodeForm() { editingPromocodeId = null; document.getElementById('promocodeModalTitle').textContent = 'Добавление промокода'; document.getElementById('promocodeForm').reset(); document.getElementById('promocodeId').value = ''; document.getElementById('promocodeModal').classList.add('active'); }
+        function editPromocode(id) { const promocode = db.getPromocodeById(id); if (!promocode) return; editingPromocodeId = id; document.getElementById('promocodeModalTitle').textContent = 'Редактирование промокода'; document.getElementById('promocodeId').value = promocode.id; document.getElementById('promocodeCode').value = promocode.code; document.getElementById('promocodeType').value = promocode.type; document.getElementById('promocodeDiscount').value = promocode.discount; document.getElementById('promocodeMinSum').value = promocode.minSum; document.getElementById('promocodeStartDate').value = promocode.startDate || ''; document.getElementById('promocodeEndDate').value = promocode.endDate || ''; document.getElementById('promocodeMaxUses').value = promocode.maxUses; document.getElementById('promocodeModal').classList.add('active'); }
+        function closePromocodeModal() { document.getElementById('promocodeModal').classList.remove('active'); editingPromocodeId = null; }
+        function savePromocode(event) { event.preventDefault(); const promocodeData = { code: document.getElementById('promocodeCode').value.toUpperCase(), type: document.getElementById('promocodeType').value, discount: parseInt(document.getElementById('promocodeDiscount').value), minSum: parseInt(document.getElementById('promocodeMinSum').value) || 0, startDate: document.getElementById('promocodeStartDate').value || null, endDate: document.getElementById('promocodeEndDate').value || null, maxUses: parseInt(document.getElementById('promocodeMaxUses').value) }; if (editingPromocodeId) { const old = db.getPromocodeById(editingPromocodeId); promocodeData.uses = old.uses; db.updatePromocode(editingPromocodeId, promocodeData); alert('✅ Промокод обновлен!'); } else { db.addPromocode(promocodeData); alert('✅ Промокод добавлен!'); } closePromocodeModal(); loadPromocodes(); }
+        function deletePromocode(id) { if (confirm('Удалить промокод?')) { db.deletePromocode(id); loadPromocodes(); alert('🗑️ Промокод удален'); } }
+
+        // ============= ТЕМА =============
+        function initTheme() {
+            const savedTheme = localStorage.getItem('vedgi_theme');
+            if (savedTheme === 'dark') { document.body.classList.add('dark-theme'); document.getElementById('theme-toggle').textContent = '☀️'; }
+        }
+        const themeToggle = document.getElementById('theme-toggle');
+        if (themeToggle) {
+            themeToggle.addEventListener('click', () => {
+                document.body.classList.toggle('dark-theme');
+                const isDark = document.body.classList.contains('dark-theme');
+                themeToggle.textContent = isDark ? '☀️' : '🌙';
+                localStorage.setItem('vedgi_theme', isDark ? 'dark' : 'light');
+            });
+        }
+
+        // ============= ОБНОВЛЕНИЕ ШАПКИ (исправленное выпадающее меню) =============
+        function updateHeader() {
+            const authButtons = document.getElementById('authButtons');
+            const currentUserData = localStorage.getItem('current_user');
+            
+            if (currentUserData) {
+                const user = JSON.parse(currentUserData);
+                authButtons.innerHTML = `
+                    <div class="user-menu">
+                        <span class="user-name" onclick="toggleMenu(event)">${user.name} ▼</span>
+                        <div class="user-dropdown" id="userDropdown">
+                            <a href="profile.html">👤 Личный кабинет</a>
+                            ${user.role === 'admin' || user.role === 'manager' ? '<a href="admin.html">⚙️ Панель управления</a>' : ''}
+                            <a href="#" onclick="logout(); return false;">🚪 Выйти</a>
+                        </div>
+                    </div>
+                `;
+            } else {
+                authButtons.innerHTML = `
+                    <a href="login.html" class="btn-login">Войти</a>
+                    <a href="login.html?register=true" class="btn-register">Регистрация</a>
+                `;
+            }
+        }
+
+        function toggleMenu(event) {
+            event.stopPropagation();
+            const dropdown = document.getElementById('userDropdown');
+            if (dropdown) {
+                dropdown.classList.toggle('show');
+            }
+        }
+
+        document.addEventListener('click', function() {
+            const dropdown = document.getElementById('userDropdown');
+            if (dropdown) {
+                dropdown.classList.remove('show');
+            }
+        });
+
+        // ============= ИНИЦИАЛИЗАЦИЯ =============
+        document.addEventListener('DOMContentLoaded', () => {
+            initTheme();
+            updateHeader();
+            checkAuth();
+        });
+    </script>
+</body>
+</html>
